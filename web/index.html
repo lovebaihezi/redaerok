@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>redaerok</title>
+        <style>
+            html: {
+                margin: 0;
+                padding: 0;
+                border: 0;
+            }
+            body {
+                width: 100vw;
+                height: 100vh;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            canvas:focus {
+                outline: none;
+            }
+        </style>
+    </head>
+    <body style="margin: 0px">
+        <script type="module">
+            import "./restart-audio-context.js";
+            import init from "./redaerok.js";
+
+            init().catch((error) => {
+                if (
+                    !error.message.startsWith(
+                        "Using exceptions for control flow, don't mind me. This isn't actually an error!",
+                    )
+                ) {
+                    throw error;
+                }
+            });
+        </script>
+    </body>
+</html>
