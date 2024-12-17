@@ -1,0 +1,11 @@
+[package]
+name = "app"
+version = "0.0.1"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+bevy = { workspace = true }
+log = { workspace = true }
+flume = { workspace = true }
+dotenv = { workspace = true }
