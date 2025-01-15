@@ -1,5 +1,5 @@
 use bevy::app::AppExit;
-use dinosaur_game::app::{AppType, Game};
+use rdaerok_app::app::{AppType, Game};
 
 fn main() {
     let game = Game::init(AppType::Normal);
