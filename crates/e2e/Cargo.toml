@@ -5,4 +5,4 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-app = { path = "../app" }
+redaerok-app = { path = "../app" }
