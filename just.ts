@@ -26,7 +26,7 @@ async function buildWasm() {
   await $`cargo build --release --target wasm32-unknown-unknown`;
 }
 
-async function prepareWasmPackage(env: Env = { binary: "dinosaur-game" }) {
+async function prepareWasmPackage(env: Env = { binary: "redaerok-app" }) {
   // Gen JS
   await $`wasm-bindgen --out-name ${env.binary} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${env.binary}.wasm`;
   // Optimize Wasm
@@ -54,24 +54,28 @@ await new Command()
   .globalOption("--env <level:env>", "Environment to build", {
     default: "linux",
   })
-  .description("Script for the dinosaur game").action(async () => {
+  .description("Script for the dinosaur game")
+  .action(async () => {
     await buildRelease();
   })
-  .command("install-linux-deps", "Install dependencies").action(async () => {
+  .command("install-linux-deps", "Install dependencies")
+  .action(async () => {
     await installLinuxDeps();
   })
-  .command("install-wasm-deps", "Install wasm dependencies").action(
-    async () => {
-      await installWasmDeps();
-    },
-  )
-  .command("build-wasm", "Build wasm").action(async () => {
+  .command("install-wasm-deps", "Install wasm dependencies")
+  .action(async () => {
+    await installWasmDeps();
+  })
+  .command("build-wasm", "Build wasm")
+  .action(async () => {
     await buildWasm();
   })
-  .command("prepare-wasm-package", "Prepare wasm package").action(async () => {
+  .command("prepare-wasm-package", "Prepare wasm package")
+  .action(async () => {
     await prepareWasmPackage();
   })
-  .command("web", "Web build").action(async () => {
+  .command("web", "Web build")
+  .action(async () => {
     await installWasmDeps();
     await buildWasm();
     await prepareWasmPackage();
