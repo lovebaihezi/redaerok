@@ -11,7 +11,7 @@ interface Env {
 async function installLinuxDeps() {
   // TODO: check if Ubuntu
   await $`sudo apt-get update`;
-  await $`sudo apt-get install --no-install-recommends pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev clang mold libwayland-dev libxkbcommon-dev`;
+  await $`sudo apt-get install clang pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev mold mesa-vulkan-drivers`;
 }
 
 async function installWasmDeps() {
