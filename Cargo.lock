@@ -192,16 +192,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
 
 [[package]]
-name = "app"
-version = "0.0.1"
-dependencies = [
- "bevy",
- "dotenv",
- "flume",
- "log",
-]
-
-[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3656,10 +3646,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0d463f2884048e7153449a55166f91028d5b0ea53c79377099ce4e8cf0cf9bb"
 
 [[package]]
+name = "redaerok-app"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "dotenv",
+ "flume",
+ "log",
+]
+
+[[package]]
 name = "redaerok-e2e"
 version = "0.0.1"
 dependencies = [
- "app",
+ "redaerok-app",
 ]
 
 [[package]]
