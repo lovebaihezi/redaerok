@@ -1,7 +1,7 @@
 use bevy::{
     dev_tools::fps_overlay::FpsOverlayConfig,
     input::ButtonInput,
-    prelude::{Commands, KeyCode,Res, ResMut},
+    prelude::{Commands, KeyCode, Res, ResMut},
     time::{Time, Virtual},
 };
 
