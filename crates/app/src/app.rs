@@ -1,8 +1,9 @@
 use std::time::Duration;
 
-use crate::{camera::normal_camera, test_functions::{
-    render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController,
-}};
+use crate::{
+    camera::normal_camera,
+    test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
+};
 
 use bevy::{
     app::{PluginGroupBuilder, ScheduleRunnerPlugin},
