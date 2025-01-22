@@ -1,8 +1,8 @@
 use std::time::Duration;
 
-use crate::test_functions::{
+use crate::{camera::normal_camera, test_functions::{
     render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController,
-};
+}};
 
 use bevy::{
     app::{PluginGroupBuilder, ScheduleRunnerPlugin},
@@ -65,6 +65,7 @@ impl Game {
         let mut game = Game { app: App::new() };
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
+            .add_systems(Startup, normal_camera)
             .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)));
         match app_type {
             AppType::Normal => {}
