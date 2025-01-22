@@ -1,13 +1,10 @@
 use std::time::Duration;
 
 use crate::{
-    dino_jump_animation, dino_jump_system, dino_pos_fix_system, game_info,
-    game_logic::{dino_touched_tree, reset_game},
-    normal_app_setup, setup_dino, setup_game_control, setup_ground, setup_tree,
+    camera::normal_camera,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
-    tree_move_animation, update_ground, update_window_size, user_control, GameStatus,
-    SpeedControlInfo,
 };
+
 use bevy::{
     app::{PluginGroupBuilder, ScheduleRunnerPlugin},
     dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
@@ -30,7 +27,7 @@ pub enum AppType {
 fn default_plugins(app_type: AppType) -> PluginGroupBuilder {
     let primary_window = match app_type {
         AppType::Normal => Some(Window {
-            title: "Dinosaur Game".to_string(),
+            title: "Redaerok(Book Reader)".to_string(),
             canvas: Some("#game".to_string()),
             fit_canvas_to_parent: true,
             ..Default::default()
@@ -69,38 +66,10 @@ impl Game {
         let mut game = Game { app: App::new() };
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
-            .insert_resource(GameStatus {
-                speed: 5,
-                score: 0,
-                window_width: 1920.0,
-                window_height: 1080.0,
-            })
-            .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)))
-            .insert_resource(SpeedControlInfo {
-                speed_increment: 100,
-                max_game_speed: u64::MAX,
-            })
-            .add_systems(
-                Startup,
-                (setup_ground, setup_dino, setup_tree, setup_game_control),
-            )
-            .add_systems(
-                Update,
-                (
-                    update_ground,
-                    dino_jump_system,
-                    (user_control, game_info).chain(),
-                    (dino_pos_fix_system, dino_jump_animation).chain(),
-                    tree_move_animation,
-                    (dino_touched_tree, reset_game).chain(),
-                ),
-            );
+            .add_systems(Startup, normal_camera)
+            .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)));
         match app_type {
-            AppType::Normal => {
-                game.app
-                    .add_systems(Startup, normal_app_setup)
-                    .add_systems(Update, update_window_size);
-            }
+            AppType::Normal => {}
             AppType::RenderToImageTesting => {
                 game.app
                     .add_systems(Startup, render_to_image_setup)
