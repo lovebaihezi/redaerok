@@ -3,5 +3,5 @@ mod camera;
 mod game_control;
 pub mod test_functions;
 
-pub use camera::normal_app_setup;
+pub use camera::normal_camera;
 pub use game_control::*;
