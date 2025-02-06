@@ -9,3 +9,6 @@ bevy = { workspace = true }
 log = { workspace = true }
 flume = { workspace = true }
 dotenv = { workspace = true }
+scraper = { workspace = true }
+ehttp = { workspace = true }
+deunicode = { workspace = true }
