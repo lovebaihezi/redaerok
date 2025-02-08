@@ -1,8 +1,10 @@
 use std::time::Duration;
 
 use crate::{
+    button_hover_press_ui_system,
     camera::normal_camera,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
+    txt::setup_txt_render_system,
 };
 
 use bevy::{
@@ -66,10 +68,14 @@ impl Game {
         let mut game = Game { app: App::new() };
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
-            .add_systems(Startup, normal_camera)
-            .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)));
+            .add_systems(Startup, normal_camera);
+        // .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)));
         match app_type {
-            AppType::Normal => {}
+            AppType::Normal => {
+                game.app
+                    .add_systems(Startup, setup_txt_render_system)
+                    .add_systems(Update, button_hover_press_ui_system);
+            }
             AppType::RenderToImageTesting => {
                 game.app
                     .add_systems(Startup, render_to_image_setup)
