@@ -29,16 +29,19 @@ impl ImportButton {
     }
 }
 
-impl ToString for ImportButtonStatus {
-    fn to_string(&self) -> String {
-        match self {
-            ImportButtonStatus::None => "None",
-            ImportButtonStatus::Hover => "Hover",
-            ImportButtonStatus::Importing => "Importing",
-            ImportButtonStatus::ImportSuccess => "ImportSuccess",
-            ImportButtonStatus::ImportFailed => "ImportFailed",
-        }
-        .to_string()
+impl std::fmt::Display for ImportButtonStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ImportButtonStatus::None => "None",
+                ImportButtonStatus::Hover => "Hover",
+                ImportButtonStatus::Importing => "Importing",
+                ImportButtonStatus::ImportSuccess => "ImportSuccess",
+                ImportButtonStatus::ImportFailed => "ImportFailed",
+            }
+        )
     }
 }
 
