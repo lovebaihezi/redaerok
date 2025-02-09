@@ -17,6 +17,12 @@ pub enum ImportButtonStatus {
 #[derive(Component)]
 pub struct ImportButton {}
 
+impl Default for ImportButton {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ImportButton {
     pub fn new() -> Self {
         Self {}

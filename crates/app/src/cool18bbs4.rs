@@ -109,7 +109,7 @@ pub fn fetch_uri_article(
                     200 => match res.text() {
                         Some(body) => {
                             info!("Got Text from {:#?}, scraping", uri);
-                            let article = Cool18Article::parse_from_raw_html(&body);
+                            let article = Cool18Article::parse_from_raw_html(body);
                             on_done(Ok(article));
                         }
                         None => {
@@ -134,7 +134,7 @@ pub fn fetch_uri_article(
     });
 }
 
-fn extract_main_text_from_pre_element<'a>(pre_element: scraper::ElementRef<'a>) -> String {
+fn extract_main_text_from_pre_element(pre_element: scraper::ElementRef<'_>) -> String {
     _ = pre_element;
     todo!()
 }
