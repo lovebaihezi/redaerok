@@ -13,3 +13,4 @@ scraper = { workspace = true }
 ehttp = { workspace = true }
 deunicode = { workspace = true }
 rfd = { workspace = true }
+clap = { workspace = true }

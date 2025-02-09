@@ -15,6 +15,8 @@ use bevy::{
     winit::WinitPlugin,
 };
 
+use clap::{Parser, Subcommand};
+
 pub struct Game {
     app: App,
 }
@@ -62,6 +64,10 @@ fn fps_plugin() -> FpsOverlayPlugin {
         },
     }
 }
+
+#[derive(Debug, Clone, Copy, Parser)]
+#[command(version, about, long_about = None)]
+pub struct AppOptions {}
 
 impl Game {
     pub fn init(app_type: AppType) -> Self {

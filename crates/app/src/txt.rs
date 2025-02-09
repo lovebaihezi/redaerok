@@ -35,11 +35,11 @@ impl std::fmt::Display for ImportButtonStatus {
             f,
             "{}",
             match self {
-                ImportButtonStatus::None => "None",
-                ImportButtonStatus::Hover => "Hover",
-                ImportButtonStatus::Importing => "Importing",
-                ImportButtonStatus::ImportSuccess => "ImportSuccess",
-                ImportButtonStatus::ImportFailed => "ImportFailed",
+                Self::None => "None",
+                Self::Hover => "Hover",
+                Self::Importing => "Importing",
+                Self::ImportSuccess => "ImportSuccess",
+                Self::ImportFailed => "ImportFailed",
             }
         )
     }
