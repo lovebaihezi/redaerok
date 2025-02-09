@@ -3,6 +3,8 @@ use scraper::{Html, Selector};
 
 pub enum Cool18FetchError {
     EHttpError(String),
+    EHttpFetchError(ehttp::Response),
+    EHttpFetchEmptyBody,
 }
 
 pub struct Cool18Article {
@@ -16,20 +18,27 @@ pub struct Cool18Article {
 }
 
 impl Cool18Article {
-    fn raw(&self) -> &scraper::Html {
+    pub fn raw(&self) -> &scraper::Html {
         &self.raw_html
     }
 
-    fn title(&self) -> Option<&str> {
+    pub fn title(&self) -> Option<&str> {
         self.title.as_deref()
     }
 
-    fn author(&self) -> Option<&str> {
+    pub fn author(&self) -> Option<&str> {
         self.author.as_deref()
     }
 
-    fn external_links(&self) -> Option<&[String]> {
+    pub fn external_links(&self) -> Option<&[String]> {
         self.external_links.as_deref()
+    }
+
+    pub fn paragraphs(&self) -> Option<Vec<String>> {
+        // TODO(chaibowen): the actuall Paragraph will much more complicated and should calculate by \n and stragety
+        self.main_text
+            .as_deref()
+            .map(|s| s.split('\n').map(|s| s.to_string()).collect())
     }
 
     #[tracing::instrument(skip(raw_html))]
@@ -72,6 +81,12 @@ impl Cool18Article {
                     .collect()
             });
         article.external_links = external_links;
+        let main_content = article
+            .raw()
+            .select(&raw_content_container_selector)
+            .next()
+            .map(|ele| extract_main_text_from_pre_element(ele));
+        article.main_text = main_content;
         article
     }
 }
@@ -89,18 +104,31 @@ pub fn fetch_uri_article(
     ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
         info!("Got Response of {:#?}, Try Getting HTML Body", uri);
         match result {
-            Ok(res) => match res.text() {
-                Some(body) => {
-                    info!("Got Text from {:#?}, scraping", uri);
-                    let article = Cool18Article::parse_from_raw_html(&body);
-                    on_done(Ok(article));
-                }
-                None => {
-                    warn!("Response from {:#?} got empty body", uri);
-                }
-            },
+            Ok(res) => {
+                match res.status {
+                    200 => match res.text() {
+                        Some(body) => {
+                            info!("Got Text from {:#?}, scraping", uri);
+                            let article = Cool18Article::parse_from_raw_html(&body);
+                            on_done(Ok(article));
+                        }
+                        None => {
+                            warn!("Response from {:#?} got empty body", uri);
+                            on_done(Err(Cool18FetchError::EHttpFetchEmptyBody));
+                        }
+                    },
+                    _ => {
+                        error!(
+                            "Response from {:#?} got status code not 200: {:#?}",
+                            uri, res.status
+                        );
+                        on_done(Err(Cool18FetchError::EHttpFetchError(res)));
+                    }
+                };
+            }
             Err(e) => {
                 error!("Got ehttp fetch error: {:#?} of {:#?}", e, uri);
+                on_done(Err(Cool18FetchError::EHttpError(e)));
             }
         }
     });

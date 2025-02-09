@@ -1,9 +1,4 @@
-use bevy::{
-    color::palettes::basic::*,
-    prelude::*,
-    window::{CursorGrabMode, PrimaryWindow},
-    winit::cursor::CursorIcon,
-};
+use bevy::{color::palettes::basic::*, prelude::*};
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -20,15 +15,11 @@ pub enum ImportButtonStatus {
 }
 
 #[derive(Component)]
-pub struct ImportButton {
-    pub status: ImportButtonStatus,
-}
+pub struct ImportButton {}
 
 impl ImportButton {
     pub fn new() -> Self {
-        Self {
-            status: ImportButtonStatus::None,
-        }
+        Self {}
     }
 }
 
@@ -58,6 +49,7 @@ pub fn setup_txt_render_system(mut commands: Commands) {
             parent
                 .spawn((
                     Button,
+                    ImportButton::new(),
                     Node {
                         width: Val::Px(128.0),
                         height: Val::Auto,
@@ -92,7 +84,7 @@ pub fn button_hover_press_ui_system(
             &mut BorderColor,
             &Children,
         ),
-        (Changed<Interaction>, With<Button>),
+        (Changed<Interaction>, With<Button>, With<ImportButton>),
     >,
     mut text_query: Query<&mut Text>,
 ) {
