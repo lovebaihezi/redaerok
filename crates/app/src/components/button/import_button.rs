@@ -118,5 +118,3 @@ pub fn button_hover_press_ui_system(
         }
     }
 }
-
-pub fn load_txt_from_local_file_system() {}

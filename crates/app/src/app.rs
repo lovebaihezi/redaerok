@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use crate::{
-    button_hover_press_ui_system,
     camera::normal_camera,
+    components,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
-    txt::setup_txt_render_system,
 };
 
 use bevy::{
@@ -15,7 +14,7 @@ use bevy::{
     winit::WinitPlugin,
 };
 
-use clap::{Parser, Subcommand};
+use clap::Parser;
 
 pub struct Game {
     app: App,
@@ -65,22 +64,31 @@ fn fps_plugin() -> FpsOverlayPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, Parser)]
+#[derive(Debug, Clone, Parser, Resource)]
 #[command(version, about, long_about = None)]
-pub struct AppOptions {}
+pub struct AppOptions {
+    txt_location: Option<String>,
+}
 
 impl Game {
     pub fn init(app_type: AppType) -> Self {
+        let options = AppOptions::parse();
         let mut game = Game { app: App::new() };
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
+            .insert_resource(options)
             .add_systems(Startup, normal_camera);
-        // .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)));
         match app_type {
             AppType::Normal => {
                 game.app
-                    .add_systems(Startup, setup_txt_render_system)
-                    .add_systems(Update, button_hover_press_ui_system);
+                    .add_systems(Startup, components::viewer::txt::setup_txt_viewer)
+                    .add_systems(
+                        Update,
+                        (
+                            components::viewer::txt::txt_viewer_render_txt,
+                            components::viewer::txt::txt_viewer_scroll_viewer,
+                        ),
+                    );
             }
             AppType::RenderToImageTesting => {
                 game.app
