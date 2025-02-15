@@ -1,8 +1,10 @@
+use clap::Parser;
 use std::time::Duration;
 
 use crate::{
     camera::normal_camera,
     components,
+    resources::AppOptions,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 
@@ -13,8 +15,6 @@ use bevy::{
     text::FontSmoothing,
     winit::WinitPlugin,
 };
-
-use clap::Parser;
 
 pub struct Game {
     app: App,
@@ -62,12 +62,6 @@ fn fps_plugin() -> FpsOverlayPlugin {
             enabled: true,
         },
     }
-}
-
-#[derive(Debug, Clone, Parser, Resource)]
-#[command(version, about, long_about = None)]
-pub struct AppOptions {
-    txt_location: Option<String>,
 }
 
 impl Game {
