@@ -14,5 +14,4 @@ ehttp = { workspace = true }
 deunicode = { workspace = true }
 rfd = { workspace = true }
 clap = { workspace = true }
-futures-lite = { workspace = true }
 mimalloc = { workspace = true }

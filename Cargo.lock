@@ -4347,7 +4347,6 @@ dependencies = [
  "dotenv",
  "ehttp",
  "flume",
- "futures-lite",
  "log",
  "mimalloc",
  "rfd",
