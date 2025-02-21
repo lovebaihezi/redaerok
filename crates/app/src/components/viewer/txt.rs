@@ -28,6 +28,9 @@ pub struct TxtTitle;
 #[derive(Component)]
 pub struct TxtBody;
 
+#[derive(Component)]
+pub struct TxtPara;
+
 #[derive(Resource)]
 pub struct Channel(Sender<Paragraph>, Receiver<Paragraph>);
 
@@ -50,12 +53,14 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                     Node {
                         width: Val::Percent(100.0),
                         flex_direction: FlexDirection::Row,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
                         padding: UiRect::all(Val::Px(4.0)),
-                        border: UiRect::bottom(Val::Px(0.5)),
+                        border: UiRect::all(Val::Px(0.5)),
                         overflow: Overflow::scroll_x(),
                         ..Default::default()
                     },
-                    BorderColor::from(Color::srgb(0.43, 0.56, 0.89))
+                    BorderColor::from(Color::WHITE),
                 ))
                 .with_child((
                     Text::new("Untitled"),
@@ -124,7 +129,10 @@ pub fn txt_viewer_render_txt(
     mut channel: ResMut<Channel>,
     mut command: Commands,
     raw_text: Res<RawTxt>,
+    body_query: Query<Entity, With<TxtBody>>,
+    asset_server: ResMut<AssetServer>,
 ) {
+    let font = asset_server.load("fonts/SourceHanSerifCN-VF.ttf");
     let channel = channel.as_mut();
     let rec = channel.1.clone();
     let mut paragraph_async = rec.recv_async();
@@ -132,6 +140,26 @@ pub fn txt_viewer_render_txt(
         Some(Ok(pragraph)) => {
             let content_indexes = pragraph.content;
             let raw_slice = &raw_text.raw[content_indexes[0]..content_indexes[1]];
+            for body in body_query.iter() {
+                if let Some(mut body) = command.get_entity(body) {
+                    body.with_child((
+                        TxtPara,
+                        Node {
+                            flex_direction: FlexDirection::Row,
+                            padding: UiRect::all(Val::Px(4.0)),
+                            ..Default::default()
+                        },
+                    ))
+                    .with_child((
+                        Text::new(raw_slice),
+                        TextFont {
+                            font_size: 16.0,
+                            font: font.clone(),
+                            ..Default::default()
+                        },
+                    ));
+                }
+            }
         }
         Some(Err(_)) => {}
         None => {}
