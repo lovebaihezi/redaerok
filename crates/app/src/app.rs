@@ -84,6 +84,7 @@ impl Game {
                         (
                             components::viewer::txt::txt_viewer_render_txt,
                             components::viewer::txt::txt_viewer_scroll_viewer,
+                            components::viewer::txt::update_title_based_on_current_article,
                         ),
                     );
             }

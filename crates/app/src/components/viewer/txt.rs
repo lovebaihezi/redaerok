@@ -20,18 +20,19 @@ struct Paragraph {
 }
 
 #[derive(Component)]
-struct TxtBase;
+pub struct TxtBase;
 
 #[derive(Component)]
-struct TxtTitle;
+pub struct TxtTitle;
 
 #[derive(Component)]
-struct TxtBody;
+pub struct TxtBody;
 
 #[derive(Resource)]
 pub struct Channel(Sender<Paragraph>, Receiver<Paragraph>);
 
-pub fn init_text_viewer(mut command: Commands) {
+pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
+    let font = assests.load("fonts/SourceHanSerifCN-VF.ttf");
     command
         .spawn((
             TxtBase,
@@ -55,20 +56,19 @@ pub fn init_text_viewer(mut command: Commands) {
                         ..Default::default()
                     },
                 ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("Untitled"),
-                        TextFont {
-                            font_size: 24.0,
-                            ..Default::default()
-                        },
-                        TextLayout {
-                            justify: JustifyText::Center,
-                            linebreak: LineBreak::WordOrCharacter,
-                        },
-                        TextColor::from(Color::WHITE),
-                    ));
-                });
+                .with_child((
+                    Text::new("Untitled"),
+                    TextFont {
+                        font_size: 24.0,
+                        font,
+                        ..Default::default()
+                    },
+                    TextLayout {
+                        justify: JustifyText::Center,
+                        linebreak: LineBreak::WordOrCharacter,
+                    },
+                    TextColor::from(Color::WHITE),
+                ));
             parent.spawn((
                 TxtBody,
                 Node {
@@ -103,6 +103,17 @@ pub fn handle_new_text(mut command: Commands) {
             }
         })
         .detach();
+}
+
+pub fn update_title_based_on_current_article(
+    raw_text: Res<RawTxt>,
+    txt_title_query: Query<&Children, With<TxtTitle>>,
+    mut text_query: Query<&mut Text>,
+) {
+    for txt_title in &mut txt_title_query.iter() {
+        let mut content = text_query.get_mut(txt_title[0]).unwrap();
+        **content = raw_text.name.to_string();
+    }
 }
 
 pub fn txt_viewer_render_txt(
