@@ -1,4 +1,5 @@
-use bevy::{prelude::*, tasks::AsyncComputeTaskPool};
+use bevy::{prelude::*, tasks::AsyncComputeTaskPool, utils::futures};
+
 use flume::{Receiver, Sender};
 
 const TEXT_FOR_TESTING_APP: &str = "# 什么是后现代 (Postmodernism) ?
@@ -8,67 +9,118 @@ const TEXT_FOR_TESTING_APP: &str = "# 什么是后现代 (Postmodernism) ?
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Resource)]
 pub struct RawTxt {
-    name: Option<String>,
+    name: String,
     raw: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Component)]
-struct Article {
-    title: String,
-    paragraphs: Vec<Paragraph>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Component)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Paragraph {
-    content: String,
+    index: usize,
+    content: [usize; 2],
 }
 
-impl Paragraph {
-    fn new(content: impl ToString) -> Self {
-        Paragraph {
-            content: content.to_string(),
-        }
-    }
-}
+#[derive(Component)]
+struct TxtBase;
+
+#[derive(Component)]
+struct TxtTitle;
+
+#[derive(Component)]
+struct TxtBody;
 
 #[derive(Resource)]
-pub struct Channel(Sender<Article>, Receiver<Article>);
+pub struct Channel(Sender<Paragraph>, Receiver<Paragraph>);
 
-impl From<&RawTxt> for Article {
-    /// # Parse Simple Article from RawTxt
-    /// Heavy Computing
-    fn from(raw: &RawTxt) -> Self {
-        let title = raw.name.clone().unwrap_or_default();
-        let paragraphs = raw.raw.split("\n").map(Paragraph::new).collect();
-        Article { title, paragraphs }
-    }
+pub fn init_text_viewer(mut command: Commands) {
+    command
+        .spawn((
+            TxtBase,
+            Node {
+                flex_direction: FlexDirection::Column,
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                ..Default::default()
+            },
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    TxtTitle,
+                    Node {
+                        width: Val::Percent(100.0),
+                        flex_direction: FlexDirection::Row,
+                        padding: UiRect::all(Val::Px(4.0)),
+                        border: UiRect::bottom(Val::Px(0.5)),
+                        overflow: Overflow::scroll_x(),
+                        ..Default::default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        Text::new("Untitled"),
+                        TextFont {
+                            font_size: 24.0,
+                            ..Default::default()
+                        },
+                        TextLayout {
+                            justify: JustifyText::Center,
+                            linebreak: LineBreak::WordOrCharacter,
+                        },
+                        TextColor::from(Color::WHITE),
+                    ));
+                });
+            parent.spawn((
+                TxtBody,
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    ..Default::default()
+                },
+            ));
+        });
 }
 
-pub fn setup_txt_viewer(mut command: Commands) {
-    command.insert_resource(RawTxt {
-        name: Some("后现代".to_string()),
+pub fn handle_new_text(mut command: Commands) {
+    // TODO(chaibowen): Currently schedule in StartUp for testing, it should be triggered as recv
+    // an event of a file selected and readed
+    let raw_text = RawTxt {
+        name: "后现代".to_string(),
         raw: TEXT_FOR_TESTING_APP.to_string(),
-    });
-    let (sender, receiver) = flume::unbounded::<Article>();
-    command.insert_resource(Channel(sender, receiver));
-}
-
-pub fn handle_paragraphs(mut channel: ResMut<Channel>, raw_text: Res<RawTxt>) {
+    };
+    command.insert_resource(raw_text.clone());
+    let (sender, receiver) = flume::unbounded::<Paragraph>();
+    command.insert_resource(Channel(sender.clone(), receiver));
     let task_pool = AsyncComputeTaskPool::get();
-    let channel = channel.as_mut();
-    let sender = channel.0.clone();
-    let text = raw_text.as_ref().clone();
     task_pool
         .spawn(async move {
-            let article = Article::from(&text);
-            sender.send_async(article).await.unwrap();
+            let mut start = 0usize;
+            for (index, line) in raw_text.raw.lines().enumerate() {
+                let paragraph = Paragraph {
+                    index,
+                    content: [start, start + line.len()],
+                };
+                start += line.len() + 1;
+                sender.send_async(paragraph).await.unwrap();
+            }
         })
         .detach();
 }
 
-pub fn txt_viewer_render_txt(mut channel: ResMut<Channel>) {
+pub fn txt_viewer_render_txt(
+    mut channel: ResMut<Channel>,
+    mut command: Commands,
+    raw_text: Res<RawTxt>,
+) {
     let channel = channel.as_mut();
     let rec = channel.1.clone();
+    let mut paragraph_async = rec.recv_async();
+    match futures::check_ready(&mut paragraph_async) {
+        Some(Ok(pragraph)) => {
+            let content_indexes = pragraph.content;
+            let raw_slice = &raw_text.raw[content_indexes[0]..content_indexes[1]];
+        }
+        Some(Err(_)) => {}
+        None => {}
+    }
 }
 
 pub fn txt_viewer_scroll_viewer() {}

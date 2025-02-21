@@ -1,5 +1,9 @@
 use bevy::app::AppExit;
+use mimalloc::MiMalloc;
 use redaerok_app::app::{AppType, Game};
+
+#[global_allocator]
+static MIMALLOC_ALLOCATOR: MiMalloc = MiMalloc;
 
 fn main() {
     let game = Game::init(AppType::Normal);

@@ -5,6 +5,7 @@ use crate::{
     camera::normal_camera,
     components,
     resources::AppOptions,
+    show_fps_overlay,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 
@@ -71,11 +72,13 @@ impl Game {
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(options)
-            .add_systems(Startup, normal_camera);
+            .add_systems(Startup, normal_camera)
+            .add_systems(Update, show_fps_overlay);
         match app_type {
             AppType::Normal => {
                 game.app
-                    .add_systems(Startup, components::viewer::txt::setup_txt_viewer)
+                    .add_systems(Startup, components::viewer::txt::init_text_viewer)
+                    .add_systems(Startup, components::viewer::txt::handle_new_text)
                     .add_systems(
                         Update,
                         (

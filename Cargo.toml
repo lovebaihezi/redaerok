@@ -21,6 +21,8 @@ ehttp = "0.5.0"
 deunicode = "1.6.0"
 rfd = "0.15.2"
 clap = { version = "4.5.28", features = ["derive"] }
+futures-lite = "2.6.0"
+mimalloc = "0.1.43"
 
 [profile.dev]
 opt-level = 1
