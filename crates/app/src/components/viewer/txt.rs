@@ -1,8 +1,5 @@
 use bevy::{
-    input::mouse::{AccumulatedMouseScroll, MouseWheel},
-    picking::focus::HoverMap,
-    prelude::*,
-    tasks::AsyncComputeTaskPool,
+    input::mouse::MouseWheel, picking::focus::HoverMap, prelude::*, tasks::AsyncComputeTaskPool,
     utils::futures,
 };
 
@@ -106,7 +103,12 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                 flex_direction: FlexDirection::Column,
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                padding: UiRect::all(Val::Percent(4.0)),
+                padding: UiRect::new(
+                    Val::Percent(3.0),
+                    Val::Percent(3.0),
+                    Val::Px(16.0),
+                    Val::Px(16.0),
+                ),
                 ..Default::default()
             },
         ))
@@ -120,7 +122,7 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         padding: UiRect::all(Val::Px(4.0)),
-                        border: UiRect::all(Val::Px(0.5)),
+                        border: UiRect::bottom(Val::Px(0.5)),
                         overflow: Overflow::scroll_x(),
                         ..Default::default()
                     },
@@ -143,8 +145,13 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                 TxtBody,
                 Node {
                     flex_direction: FlexDirection::Column,
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    overflow: Overflow::clip_y(),
+                    padding: UiRect::all(Val::Px(4.0)),
                     ..Default::default()
                 },
+                ScrollPosition::DEFAULT,
             ));
         });
 }
@@ -219,8 +226,12 @@ pub fn txt_viewer_render_txt(
                                 Node {
                                     flex_direction: FlexDirection::Row,
                                     padding: UiRect::all(Val::Px(4.0)),
+                                    width: Val::Auto,
+                                    height: Val::Auto,
                                     ..Default::default()
                                 },
+                                Transform::default(),
+                                Outline::new(Val::Px(0.0), Val::Px(0.0), Color::WHITE),
                             ))
                             .with_child((
                                 Text::new(raw_slice),
@@ -242,8 +253,9 @@ pub fn txt_viewer_render_txt(
 pub fn txt_viewer_scroll_viewer(
     mut scroll_event_reader: EventReader<MouseWheel>,
     hover_map: Res<HoverMap>,
-    mut scrolled_node_query: Query<&mut ScrollPosition>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    parent: Query<&Parent>,
+    mut transforms: Query<&mut Transform, With<TxtPara>>,
 ) {
     for event in scroll_event_reader.read() {
         if event.y.abs() == 0.0 {
@@ -260,8 +272,13 @@ pub fn txt_viewer_scroll_viewer(
 
         for (_pointer, pointer_map) in hover_map.iter() {
             for (entity, _hit) in pointer_map.iter() {
-                if let Ok(mut scroll_position) = scrolled_node_query.get_mut(*entity) {
-                    scroll_position.offset_y -= dy;
+                if let Ok(parent_node) = parent.get(*entity) {
+                    if parent.get(**parent_node).is_ok() {
+                        info!("scrolling");
+                        for mut transform in transforms.iter_mut() {
+                            transform.translation.y += dy * 10.0;
+                        }
+                    }
                 }
             }
         }
