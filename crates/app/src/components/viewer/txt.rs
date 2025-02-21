@@ -55,6 +55,7 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                         overflow: Overflow::scroll_x(),
                         ..Default::default()
                     },
+                    BorderColor::from(Color::srgb(0.43, 0.56, 0.89))
                 ))
                 .with_child((
                     Text::new("Untitled"),
@@ -109,11 +110,14 @@ pub fn update_title_based_on_current_article(
     raw_text: Res<RawTxt>,
     txt_title_query: Query<&Children, With<TxtTitle>>,
     mut text_query: Query<&mut Text>,
+    mut window: Query<&mut Window>,
 ) {
+    let mut window = window.single_mut();
     for txt_title in &mut txt_title_query.iter() {
         let mut content = text_query.get_mut(txt_title[0]).unwrap();
         **content = raw_text.name.to_string();
     }
+    window.name = Some(raw_text.name.to_string());
 }
 
 pub fn txt_viewer_render_txt(
