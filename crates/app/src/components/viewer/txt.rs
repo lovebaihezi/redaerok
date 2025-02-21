@@ -43,6 +43,7 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                 flex_direction: FlexDirection::Column,
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
+                padding: UiRect::all(Val::Percent(4.0)),
                 ..Default::default()
             },
         ))
@@ -142,22 +143,25 @@ pub fn txt_viewer_render_txt(
             let raw_slice = &raw_text.raw[content_indexes[0]..content_indexes[1]];
             for body in body_query.iter() {
                 if let Some(mut body) = command.get_entity(body) {
-                    body.with_child((
-                        TxtPara,
-                        Node {
-                            flex_direction: FlexDirection::Row,
-                            padding: UiRect::all(Val::Px(4.0)),
-                            ..Default::default()
-                        },
-                    ))
-                    .with_child((
-                        Text::new(raw_slice),
-                        TextFont {
-                            font_size: 16.0,
-                            font: font.clone(),
-                            ..Default::default()
-                        },
-                    ));
+                    body.with_children(|parent| {
+                        parent
+                            .spawn((
+                                TxtPara,
+                                Node {
+                                    flex_direction: FlexDirection::Row,
+                                    padding: UiRect::all(Val::Px(4.0)),
+                                    ..Default::default()
+                                },
+                            ))
+                            .with_child((
+                                Text::new(raw_slice),
+                                TextFont {
+                                    font_size: 16.0,
+                                    font: font.clone(),
+                                    ..Default::default()
+                                },
+                            ));
+                    });
                 }
             }
         }
