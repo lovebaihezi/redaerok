@@ -1,9 +1,9 @@
 use bevy::{
-    input::mouse::MouseWheel, picking::focus::HoverMap, prelude::*, tasks::AsyncComputeTaskPool,
+    input::mouse::{MouseScrollUnit, MouseWheel}, picking::focus::HoverMap, prelude::*, tasks::AsyncComputeTaskPool,
     utils::futures,
 };
 
-use flume::{Receiver, Sender};
+use flume::Receiver;
 
 const TEXT_FOR_TESTING_APP: &str = r#"
 1 
@@ -92,7 +92,7 @@ pub struct TxtBody;
 pub struct TxtPara;
 
 #[derive(Resource)]
-pub struct Channel(Sender<Paragraph>, Receiver<Paragraph>);
+pub struct ParagraphRecv(Receiver<Paragraph>);
 
 pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
     let font = assests.load("fonts/SourceHanSerifCN-VF.ttf");
@@ -147,11 +147,15 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                     flex_direction: FlexDirection::Column,
                     width: Val::Percent(100.0),
                     height: Val::Percent(100.0),
-                    overflow: Overflow::clip_y(),
+                    overflow: Overflow::scroll_y(),
                     padding: UiRect::all(Val::Px(4.0)),
                     ..Default::default()
                 },
-                ScrollPosition::DEFAULT,
+                PickingBehavior {
+                    is_hoverable: true,
+                    should_block_lower: true,
+                },
+                Outline::new(Val::Px(1.0), Val::Px(-0.5), Color::WHITE)
             ));
         });
 }
@@ -165,7 +169,7 @@ pub fn handle_new_text(mut command: Commands) {
     };
     command.insert_resource(raw_text.clone());
     let (sender, receiver) = flume::unbounded::<Paragraph>();
-    command.insert_resource(Channel(sender.clone(), receiver));
+    command.insert_resource(ParagraphRecv(receiver));
     let task_pool = AsyncComputeTaskPool::get();
     task_pool
         .spawn(async move {
@@ -200,7 +204,7 @@ pub fn update_title_based_on_current_article(
 }
 
 pub fn txt_viewer_render_txt(
-    mut channel: ResMut<Channel>,
+    mut channel: ResMut<ParagraphRecv>,
     mut command: Commands,
     raw_text: Res<RawTxt>,
     body_query: Query<Entity, With<TxtBody>>,
@@ -208,7 +212,7 @@ pub fn txt_viewer_render_txt(
 ) {
     let font = asset_server.load("fonts/SourceHanSerifCN-VF.ttf");
     let channel = channel.as_mut();
-    let rec = channel.1.clone();
+    let rec = channel.0.clone();
     if rec.is_empty() {
         return;
     }
@@ -226,12 +230,12 @@ pub fn txt_viewer_render_txt(
                                 Node {
                                     flex_direction: FlexDirection::Row,
                                     padding: UiRect::all(Val::Px(4.0)),
+                                    border: UiRect::all(Val::Px(0.5)),
                                     width: Val::Auto,
                                     height: Val::Auto,
                                     ..Default::default()
                                 },
-                                Transform::default(),
-                                Outline::new(Val::Px(0.0), Val::Px(0.0), Color::WHITE),
+                                BorderColor::from(Color::WHITE),
                             ))
                             .with_child((
                                 Text::new(raw_slice),
@@ -242,6 +246,7 @@ pub fn txt_viewer_render_txt(
                                 },
                             ));
                     });
+                    command.run_system_cached(txt_viewer_render_txt);
                 }
             }
         }
@@ -255,28 +260,33 @@ pub fn txt_viewer_scroll_viewer(
     hover_map: Res<HoverMap>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     parent: Query<&Parent>,
-    mut transforms: Query<&mut Transform, With<TxtPara>>,
+    mut scrolled_node_query: Query<&mut ScrollPosition, With<TxtBody>>,
 ) {
     for event in scroll_event_reader.read() {
-        if event.y.abs() == 0.0 {
-            continue;
-        }
+        let (mut dx, mut dy) = match event.unit {
+            MouseScrollUnit::Line => (
+                event.x * 16.0,
+                event.y * 16.0,
+            ),
+            MouseScrollUnit::Pixel => (event.x, event.y),
+        };
 
-        let dy = if keyboard_input.pressed(KeyCode::ControlLeft)
+        if keyboard_input.pressed(KeyCode::ControlLeft)
             || keyboard_input.pressed(KeyCode::ControlRight)
         {
-            -event.y
-        } else {
-            event.y
-        };
+            std::mem::swap(&mut dx, &mut dy);
+        }
+
+        if dy == 0.0 {
+            continue
+        }
 
         for (_pointer, pointer_map) in hover_map.iter() {
             for (entity, _hit) in pointer_map.iter() {
                 if let Ok(parent_node) = parent.get(*entity) {
                     if parent.get(**parent_node).is_ok() {
-                        info!("scrolling");
-                        for mut transform in transforms.iter_mut() {
-                            transform.translation.y += dy * 10.0;
+                        for mut scroll in scrolled_node_query.iter_mut() {
+                            scroll.offset_y -= dy * 2.0;
                         }
                     }
                 }

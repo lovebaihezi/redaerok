@@ -14,7 +14,7 @@ use bevy::{
     dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
     prelude::*,
     text::FontSmoothing,
-    winit::WinitPlugin,
+    winit::{WinitPlugin, WinitSettings},
 };
 
 pub struct Game {
@@ -72,6 +72,7 @@ impl Game {
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(options)
+            .insert_resource(WinitSettings::desktop_app())
             .add_systems(Startup, normal_camera)
             .add_systems(Update, show_fps_overlay);
         match app_type {
