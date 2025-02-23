@@ -1,5 +1,8 @@
 use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel}, picking::focus::HoverMap, prelude::*, tasks::AsyncComputeTaskPool,
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    picking::focus::HoverMap,
+    prelude::*,
+    tasks::{AsyncComputeTaskPool, Task},
     utils::futures,
 };
 
@@ -155,9 +158,30 @@ pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
                     is_hoverable: true,
                     should_block_lower: true,
                 },
-                Outline::new(Val::Px(1.0), Val::Px(-0.5), Color::WHITE)
             ));
         });
+}
+
+#[derive(Component)]
+struct RawTxtAsync(Task<Option<RawTxt>>);
+
+pub fn pick_file_using_rfs(mut command: Commands) {
+    let pool = AsyncComputeTaskPool::get();
+    let file_handle: Task<Option<RawTxt>> = pool.spawn(async move {
+        let afd = rfd::AsyncFileDialog::new();
+        if let Some(file) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
+            let file_name = file.file_name();
+            let file_content = file.read().await;
+            Some(RawTxt {
+                name: file_name,
+                //TODO(chaibowen): the content may not encode in utf-8, should support it
+                raw: String::from_utf8_lossy(&file_content).to_string(),
+            })
+        } else {
+            None
+        }
+    });
+    command.spawn(RawTxtAsync(file_handle));
 }
 
 pub fn handle_new_text(mut command: Commands) {
@@ -230,12 +254,10 @@ pub fn txt_viewer_render_txt(
                                 Node {
                                     flex_direction: FlexDirection::Row,
                                     padding: UiRect::all(Val::Px(4.0)),
-                                    border: UiRect::all(Val::Px(0.5)),
                                     width: Val::Auto,
                                     height: Val::Auto,
                                     ..Default::default()
                                 },
-                                BorderColor::from(Color::WHITE),
                             ))
                             .with_child((
                                 Text::new(raw_slice),
@@ -251,7 +273,9 @@ pub fn txt_viewer_render_txt(
             }
         }
         Some(Err(_)) => {}
-        None => {}
+        None => {
+            info!("Not ready yet")
+        }
     }
 }
 
@@ -264,10 +288,7 @@ pub fn txt_viewer_scroll_viewer(
 ) {
     for event in scroll_event_reader.read() {
         let (mut dx, mut dy) = match event.unit {
-            MouseScrollUnit::Line => (
-                event.x * 16.0,
-                event.y * 16.0,
-            ),
+            MouseScrollUnit::Line => (event.x * 16.0, event.y * 16.0),
             MouseScrollUnit::Pixel => (event.x, event.y),
         };
 
@@ -278,7 +299,7 @@ pub fn txt_viewer_scroll_viewer(
         }
 
         if dy == 0.0 {
-            continue
+            continue;
         }
 
         for (_pointer, pointer_map) in hover_map.iter() {

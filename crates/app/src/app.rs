@@ -67,6 +67,9 @@ fn fps_plugin() -> FpsOverlayPlugin {
 
 impl Game {
     pub fn init(app_type: AppType) -> Self {
+        #[cfg(target_arch = "wasm32")]
+        let options = AppOptions::parse_from(&[""]);
+        #[cfg(not(target_arch = "wasm32"))]
         let options = AppOptions::parse();
         let mut game = Game { app: App::new() };
         game.app

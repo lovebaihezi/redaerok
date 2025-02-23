@@ -85,6 +85,7 @@ pub fn setup_txt_render_system(mut commands: Commands) {
         });
 }
 
+#[allow(clippy::type_complexity)]
 pub fn button_hover_press_ui_system(
     mut interaction_query: Query<
         (
