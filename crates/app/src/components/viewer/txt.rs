@@ -260,7 +260,7 @@ pub fn txt_viewer_scroll_viewer(
     hover_map: Res<HoverMap>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     parent: Query<&Parent>,
-    mut scrolled_node_query: Query<&mut ScrollPosition, With<TxtBody>>,
+    mut txt_body_query: Query<&mut ScrollPosition, With<TxtBody>>,
 ) {
     for event in scroll_event_reader.read() {
         let (mut dx, mut dy) = match event.unit {
@@ -285,7 +285,7 @@ pub fn txt_viewer_scroll_viewer(
             for (entity, _hit) in pointer_map.iter() {
                 if let Ok(parent_node) = parent.get(*entity) {
                     if parent.get(**parent_node).is_ok() {
-                        for mut scroll in scrolled_node_query.iter_mut() {
+                        for mut scroll in txt_body_query.iter_mut() {
                             scroll.offset_y -= dy * 2.0;
                         }
                     }
