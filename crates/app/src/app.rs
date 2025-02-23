@@ -2,11 +2,7 @@ use clap::Parser;
 use std::time::Duration;
 
 use crate::{
-    camera::normal_camera,
-    components,
-    resources::AppOptions,
-    show_fps_overlay,
-    test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
+    camera::normal_camera, components, pages, resources::AppOptions, show_fps_overlay, test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController}
 };
 
 use bevy::{
@@ -81,11 +77,11 @@ impl Game {
         match app_type {
             AppType::Normal => {
                 game.app
-                    .add_systems(Startup, components::viewer::txt::init_text_viewer)
-                    .add_systems(Startup, components::viewer::txt::handle_new_text)
+                    .add_systems(Startup, pages::welcome::setup_welcome_ui)
                     .add_systems(
                         Update,
                         (
+                            components::viewer::txt::handle_new_text,
                             components::viewer::txt::txt_viewer_render_txt,
                             components::viewer::txt::txt_viewer_scroll_viewer,
                             components::viewer::txt::update_title_based_on_current_article,

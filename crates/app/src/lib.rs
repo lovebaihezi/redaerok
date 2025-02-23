@@ -3,6 +3,7 @@ mod camera;
 pub mod components;
 mod cool18bbs4;
 mod game_control;
+mod pages;
 pub mod resources;
 pub mod test_functions;
 
