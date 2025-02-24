@@ -85,7 +85,8 @@ impl Game {
                     .add_systems(
                         FixedUpdate,
                         (
-                            components::viewer::txt::handle_new_text.after(components::viewer::txt::setup_txt_viewer),
+                            components::viewer::txt::handle_new_text
+                                .after(components::viewer::txt::setup_txt_viewer),
                             components::viewer::txt::txt_viewer_render_txt,
                             components::viewer::txt::update_title_based_on_current_article,
                         ),
