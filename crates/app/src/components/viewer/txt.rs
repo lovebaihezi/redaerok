@@ -35,69 +35,77 @@ pub struct TxtPara;
 #[derive(Resource)]
 pub struct ParagraphRecv(Receiver<Paragraph>);
 
-pub fn init_text_viewer(mut command: Commands, assests: Res<AssetServer>) {
+pub fn setup_txt_viewer(
+    mut command: Commands,
+    txt_base_query: Query<Entity, With<TxtBase>>,
+    assests: Res<AssetServer>,
+) {
     let font = assests.load("fonts/SourceHanSerifCN-VF.ttf");
-    command
-        .spawn((
-            TxtBase,
-            Node {
-                flex_direction: FlexDirection::Column,
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                padding: UiRect::new(
-                    Val::Percent(3.0),
-                    Val::Percent(3.0),
-                    Val::Px(16.0),
-                    Val::Px(16.0),
-                ),
-                ..Default::default()
-            },
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn((
-                    TxtTitle,
-                    Node {
-                        width: Val::Percent(100.0),
-                        flex_direction: FlexDirection::Row,
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        padding: UiRect::all(Val::Px(4.0)),
-                        border: UiRect::bottom(Val::Px(0.5)),
-                        overflow: Overflow::scroll_x(),
-                        ..Default::default()
-                    },
-                    BorderColor::from(Color::WHITE),
-                ))
+    if let Ok(txt_base) = txt_base_query.get_single() {
+        if let Some(mut entity_cmd) = command.get_entity(txt_base) {
+            entity_cmd
                 .with_child((
-                    Text::new("Untitled"),
-                    TextFont {
-                        font_size: 24.0,
-                        font,
+                    TxtBase,
+                    Node {
+                        flex_direction: FlexDirection::Column,
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        padding: UiRect::new(
+                            Val::Percent(3.0),
+                            Val::Percent(3.0),
+                            Val::Px(16.0),
+                            Val::Px(16.0),
+                        ),
                         ..Default::default()
                     },
-                    TextLayout {
-                        justify: JustifyText::Center,
-                        linebreak: LineBreak::WordOrCharacter,
-                    },
-                    TextColor::from(Color::WHITE),
-                ));
-            parent.spawn((
-                TxtBody,
-                Node {
-                    flex_direction: FlexDirection::Column,
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    overflow: Overflow::scroll_y(),
-                    padding: UiRect::all(Val::Px(4.0)),
-                    ..Default::default()
-                },
-                PickingBehavior {
-                    is_hoverable: true,
-                    should_block_lower: true,
-                },
-            ));
-        });
+                ))
+                .with_children(|parent| {
+                    parent
+                        .spawn((
+                            TxtTitle,
+                            Node {
+                                width: Val::Percent(100.0),
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                padding: UiRect::all(Val::Px(4.0)),
+                                border: UiRect::bottom(Val::Px(0.5)),
+                                overflow: Overflow::scroll_x(),
+                                ..Default::default()
+                            },
+                            BorderColor::from(Color::WHITE),
+                        ))
+                        .with_child((
+                            Text::new("Untitled"),
+                            TextFont {
+                                font_size: 24.0,
+                                font,
+                                ..Default::default()
+                            },
+                            TextLayout {
+                                justify: JustifyText::Center,
+                                linebreak: LineBreak::WordOrCharacter,
+                            },
+                            TextColor::from(Color::WHITE),
+                        ));
+                    parent.spawn((
+                        TxtBody,
+                        Node {
+                            flex_direction: FlexDirection::Column,
+                            width: Val::Percent(100.0),
+                            height: Val::Percent(100.0),
+                            overflow: Overflow::scroll_y(),
+                            padding: UiRect::all(Val::Px(4.0)),
+                            ..Default::default()
+                        },
+                        PickingBehavior {
+                            is_hoverable: true,
+                            should_block_lower: true,
+                        },
+                    ));
+                });
+        }
+    }
 }
 
 #[derive(Component)]

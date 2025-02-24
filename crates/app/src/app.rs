@@ -2,7 +2,11 @@ use clap::Parser;
 use std::time::Duration;
 
 use crate::{
-    camera::normal_camera, components, pages, resources::AppOptions, show_fps_overlay, test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController}
+    camera::normal_camera,
+    components, pages,
+    resources::AppOptions,
+    show_fps_overlay,
+    test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 
 use bevy::{
@@ -79,14 +83,14 @@ impl Game {
                 game.app
                     .add_systems(Startup, pages::welcome::setup_welcome_ui)
                     .add_systems(
-                        Update,
+                        FixedUpdate,
                         (
-                            components::viewer::txt::handle_new_text,
+                            components::viewer::txt::handle_new_text.after(components::viewer::txt::setup_txt_viewer),
                             components::viewer::txt::txt_viewer_render_txt,
-                            components::viewer::txt::txt_viewer_scroll_viewer,
                             components::viewer::txt::update_title_based_on_current_article,
                         ),
-                    );
+                    )
+                    .add_systems(Update, components::viewer::txt::txt_viewer_scroll_viewer);
             }
             AppType::RenderToImageTesting => {
                 game.app

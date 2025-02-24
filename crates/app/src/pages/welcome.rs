@@ -32,10 +32,10 @@ fn welcome_ui_message() -> (Text, TextFont, TextLayout, TextColor) {
     )
 }
 
+pub fn selected_file_from_local() {}
+
 pub fn setup_welcome_ui(mut commands: Commands) {
-    commands
-        .spawn(welcome_ui_base())
-        .with_children(|parent| {
-            parent.spawn(welcome_ui_message());
-        });
+    commands.spawn(welcome_ui_base()).with_children(|parent| {
+        parent.spawn(welcome_ui_message());
+    });
 }
