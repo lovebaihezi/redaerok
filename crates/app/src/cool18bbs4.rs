@@ -35,7 +35,6 @@ impl Cool18Article {
     }
 
     pub fn paragraphs(&self) -> Option<Vec<String>> {
-        // TODO(chaibowen): the actuall Paragraph will much more complicated and should calculate by \n and stragety
         self.main_text
             .as_deref()
             .map(|s| s.split('\n').map(|s| s.to_string()).collect())

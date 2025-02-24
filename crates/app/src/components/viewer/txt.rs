@@ -38,9 +38,9 @@ pub struct ParagraphRecv(Receiver<Paragraph>);
 pub fn setup_txt_viewer(
     mut command: Commands,
     txt_base_query: Query<Entity, With<TxtBase>>,
-    assests: Res<AssetServer>,
+    assets: Res<AssetServer>,
 ) {
-    let font = assests.load("fonts/SourceHanSerifCN-VF.ttf");
+    let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
     if let Ok(txt_base) = txt_base_query.get_single() {
         if let Some(mut entity_cmd) = command.get_entity(txt_base) {
             entity_cmd
