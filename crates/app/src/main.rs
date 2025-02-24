@@ -1,5 +1,8 @@
 use bevy::app::AppExit;
+
+#[cfg(not(target_arch = "wasm32"))]
 use mimalloc::MiMalloc;
+
 use redaerok_app::app::{AppType, Game};
 
 #[cfg(not(target_arch = "wasm32"))]
