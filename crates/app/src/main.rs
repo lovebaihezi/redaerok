@@ -2,6 +2,7 @@ use bevy::app::AppExit;
 use mimalloc::MiMalloc;
 use redaerok_app::app::{AppType, Game};
 
+#[cfg(not(target_arch = "wasm32"))]
 #[global_allocator]
 static MIMALLOC_ALLOCATOR: MiMalloc = MiMalloc;
 
