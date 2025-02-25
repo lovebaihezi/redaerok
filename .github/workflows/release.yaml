@@ -43,14 +43,12 @@ jobs:
       - name: Remove build script
         run: |
           rm build.rs
-      - name: Install rust toolchain for Apple Silicon
-        uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
           targets: aarch64-apple-darwin
       - name: Build release for Apple Silicon
         run: |
           SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --profile dist --target=aarch64-apple-darwin
-      - name: Install rust toolchain for Apple x86
-        uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
           targets: x86_64-apple-darwin
       - name: Build release for x86 Apple
         run: |
@@ -85,8 +83,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Install rust toolchain for Apple Silicon
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
       - name: Build release
@@ -118,8 +116,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Install dotnet
         if: ${{ env.BUILD_INSTALLER }}
         uses: actions/setup-dotnet@v3
@@ -167,8 +164,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
       - name: Install trunk
@@ -208,7 +204,7 @@ jobs:
       VERSION: ${{needs.get-version.outputs.version}}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Add iOS targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios
       - name: Build app for iOS
@@ -237,7 +233,7 @@ jobs:
       VERSION: ${{needs.get-version.outputs.version}}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Add Android targets
         # could add more targets like armv7-linux-androideabi here (then also add to cargo-apk config)
         run: rustup target add aarch64-linux-android
