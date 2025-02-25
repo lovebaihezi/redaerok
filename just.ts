@@ -39,7 +39,7 @@ async function prepareWasmPackage(env: Env = { binary: "redaerok-app" }) {
   $.logStep("wasm-opt Optimize wasm")
   // Optimize Wasm
   await $`wasm-opt -O wasm/${env.binary}_bg.wasm -o ${env.binary}.wasm`;
-  $.logStep("brotli to compress wasm to make it avaliable host on cloudflare");
+  $.logStep("brotli to compress wasm to make it available host on cloudflare");
   // Compress Wasm using brotli
   await $`brotli wasm/${env.binary}_bg.wasm -o web/${env.binary}_bg.wasm`;
   $.logStep("mv files to web for hosting")
