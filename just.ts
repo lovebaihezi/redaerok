@@ -8,6 +8,8 @@ interface Env {
   binary: string;
 }
 
+$.setPrintCommand(true);
+
 async function installLinuxDeps() {
   // TODO: check if Ubuntu
   await $`sudo apt-get update`;
@@ -27,28 +29,39 @@ async function buildWasm() {
 }
 
 async function prepareWasmPackage(env: Env = { binary: "redaerok-app" }) {
-  $.logStep("wasm-bindgen generate bindings");
-  // Gen JS
-  if (!(await $`test -d wasm`)) {
-    $.logLight("wasm folder not found, create wasm folder");
-    await $`mkdir wasm`
-  } else {
-    $.logLight("exists wasm folder detected, skip creating wasm folder");
+  try {
+    $.logStep("wasm-bindgen generate bindings");
+    // Gen JS
+    if (!(await $`test -d wasm`)) {
+      $.logLight("wasm folder not found, create wasm folder");
+      await $`mkdir wasm`;
+    } else {
+      $.logLight("exists wasm folder detected, skip creating wasm folder");
+    }
+    await $`wasm-bindgen --out-name ${env.binary} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${env.binary}.wasm`;
+    $.logLight("finish wasm-bindgen generate bindings");
+  } catch (e) {
+    $.logError("wasm-bindgen failed to generate bindings", e);
   }
-  await $`wasm-bindgen --out-name ${env.binary} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${env.binary}.wasm`;
-  $.logStep("wasm-opt Optimize wasm")
+  $.logStep("wasm-opt optimize wasm");
   // Optimize Wasm
   await $`wasm-opt -O wasm/${env.binary}_bg.wasm -o ${env.binary}.wasm`;
+  $.logLight("finish wasm-opt optimization");
+
   $.logStep("brotli to compress wasm to make it available host on cloudflare");
   // Compress Wasm using brotli
   await $`brotli wasm/${env.binary}_bg.wasm -o web/${env.binary}_bg.wasm`;
-  $.logStep("mv files to web for hosting")
+  $.logLight("finish brotli compressing");
+
+  $.logStep("mv files to web for hosting");
   await $`mv wasm/${env.binary}.js web/`;
   // Copy assets
   if (!(await $`test -d crates/app/assets`)) {
     await $`mkdir crates/app/assets`;
   }
   await $`cp -r crates/app/assets web/`;
+  $.logLight("finish setup web fold");
+
   $.logStep("finish prepare Wasm Package");
 }
 
