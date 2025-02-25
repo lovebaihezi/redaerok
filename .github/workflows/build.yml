@@ -36,9 +36,10 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.0.2
-      - run: ./just.ts install-wasm-deps
-      - run: ./just.ts build-wasm
-      - run: ./just.ts prepare-wasm-package
+      - run: |
+          ./just.ts install-wasm-deps
+          ./just.ts build-wasm
+          ./just.ts prepare-wasm-package
       - name: Deploy to Cloudflare Pages Preview
         uses: cloudflare/pages-action@v1
         with:

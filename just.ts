@@ -29,20 +29,16 @@ async function buildWasm() {
 }
 
 async function prepareWasmPackage(env: Env = { binary: "redaerok-app" }) {
-  try {
-    $.logStep("wasm-bindgen generate bindings");
-    // Gen JS
-    if (!(await $`test -d wasm`)) {
-      $.logLight("wasm folder not found, create wasm folder");
-      await $`mkdir wasm`;
-    } else {
-      $.logLight("exists wasm folder detected, skip creating wasm folder");
-    }
-    await $`wasm-bindgen --out-name ${env.binary} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${env.binary}.wasm`;
-    $.logLight("finish wasm-bindgen generate bindings");
-  } catch (e) {
-    $.logError("wasm-bindgen failed to generate bindings", e);
+  $.logStep("wasm-bindgen generate bindings");
+  // Gen JS
+  if (!(await $`test -d wasm`)) {
+    $.logLight("wasm folder not found, create wasm folder");
+    await $`mkdir wasm`;
+  } else {
+    $.logLight("exists wasm folder detected, skip creating wasm folder");
   }
+  await $`wasm-bindgen --out-name ${env.binary} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${env.binary}.wasm`;
+  $.logLight("finish wasm-bindgen generate bindings");
   $.logStep("wasm-opt optimize wasm");
   // Optimize Wasm
   await $`wasm-opt -O wasm/${env.binary}_bg.wasm -o ${env.binary}.wasm`;
