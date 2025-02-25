@@ -1,13 +1,11 @@
 use bevy::{
     dev_tools::fps_overlay::FpsOverlayConfig,
     input::ButtonInput,
-    prelude::{Commands, KeyCode, Res, ResMut},
-    time::{Time, Virtual},
+    prelude::{KeyCode, Res, ResMut},
 };
 
-pub fn setup_game_control(commands: Commands, mut time: ResMut<Time<Virtual>>) {
-    time.pause();
-    _ = commands;
+pub fn setup_game_control(mut overlay: ResMut<FpsOverlayConfig>) {
+    overlay.enabled = false;
 }
 
 pub fn show_fps_overlay(input: Res<ButtonInput<KeyCode>>, mut overlay: ResMut<FpsOverlayConfig>) {

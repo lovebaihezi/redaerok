@@ -3,9 +3,10 @@ use std::time::Duration;
 
 use crate::{
     camera::normal_camera,
-    components, pages,
+    components::{self, button::normal_button::NormalButton},
+    pages,
     resources::AppOptions,
-    show_fps_overlay,
+    setup_game_control, show_fps_overlay,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 
@@ -76,12 +77,16 @@ impl Game {
             .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(options)
             .insert_resource(WinitSettings::desktop_app())
-            .add_systems(Startup, normal_camera)
+            .add_systems(Startup, (normal_camera, setup_game_control))
             .add_systems(Update, show_fps_overlay);
         match app_type {
             AppType::Normal => {
                 game.app
                     .add_systems(Startup, pages::welcome::setup_welcome_ui)
+                    .add_systems(
+                        FixedUpdate,
+                        (pages::welcome::JumpTextPageBtn::normal_button_update,),
+                    )
                     .add_systems(
                         FixedUpdate,
                         (
