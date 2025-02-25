@@ -27,18 +27,29 @@ async function buildWasm() {
 }
 
 async function prepareWasmPackage(env: Env = { binary: "redaerok-app" }) {
+  $.logStep("wasm-bindgen generate bindings");
   // Gen JS
+  if (!(await $`test -d wasm`)) {
+    $.logLight("wasm folder not found, create wasm folder");
+    await $`mkdir wasm`
+  } else {
+    $.logLight("exists wasm folder detected, skip creating wasm folder");
+  }
   await $`wasm-bindgen --out-name ${env.binary} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${env.binary}.wasm`;
+  $.logStep("wasm-opt Optimize wasm")
   // Optimize Wasm
   await $`wasm-opt -O wasm/${env.binary}_bg.wasm -o ${env.binary}.wasm`;
+  $.logStep("brotli to compress wasm to make it avaliable host on cloudflare");
   // Compress Wasm using brotli
   await $`brotli wasm/${env.binary}_bg.wasm -o web/${env.binary}_bg.wasm`;
+  $.logStep("mv files to web for hosting")
   await $`mv wasm/${env.binary}.js web/`;
   // Copy assets
-  if (!(await $`test -d assets`)) {
-    await $`mkdir assets`;
+  if (!(await $`test -d crates/app/assets`)) {
+    await $`mkdir crates/app/assets`;
   }
-  await $`cp -r assets web/`;
+  await $`cp -r crates/app/assets web/`;
+  $.logStep("finish prepare Wasm Package");
 }
 
 async function buildRelease() {
@@ -49,7 +60,7 @@ async function buildRelease() {
 await new Command()
   .name("just")
   .description("Command used to build whole project")
-  .version("0.1.0")
+  .version("0.2.0")
   .type("env", envEnum)
   .globalOption("--env <level:env>", "Environment to build", {
     default: "linux",
