@@ -1,7 +1,9 @@
-name: deploy-github-page
+name: deploy-cloudflare-pages
 
 on:
-  workflow_dispatch:
+  pull_request:
+  push:
+
 
 permissions:
   contents: write
