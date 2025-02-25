@@ -1,8 +1,0 @@
-[package]
-name = "redaerok-e2e"
-version = "0.0.1"
-edition = "2021"
-build = "build.rs"
-
-[dependencies]
-redaerok-app = { path = "../app" }

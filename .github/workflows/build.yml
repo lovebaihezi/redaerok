@@ -36,21 +36,21 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.0.2
-          #- run: |
-          #    ./just.ts install-wasm-deps
-          #    ./just.ts build-wasm
-          #    ./just.ts prepare-wasm-package
-          #- name: Deploy to Cloudflare Pages Preview
-          #  uses: cloudflare/pages-action@v1
-          #  with:
-          #    apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          #    accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          #    projectName: redaerok
-          #    directory: ./web
-          #    # Optional parameters
-          #    gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          #    branch: ${{ github.event.pull_request.head.ref }}
-          #    wranglerVersion: "3"
+      - run: |
+          ./just.ts install-wasm-deps
+          ./just.ts build-wasm
+          ./just.ts prepare-wasm-package
+      - name: Deploy to Cloudflare Pages Preview
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: redaerok
+          directory: ./web
+          # Optional parameters
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.pull_request.head.ref }}
+          wranglerVersion: "3"
 
   # Build for Linux
   release-linux:
