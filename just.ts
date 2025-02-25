@@ -46,11 +46,7 @@ async function prepareWasmPackage(env: Env = { binary: "redaerok-app" }) {
 
   $.logStep("mv files to web for hosting");
   await $`mv wasm/${env.binary}.js web/`;
-  // Copy assets
-  if (!(await $`test -d crates/app/assets`)) {
-    await $`mkdir crates/app/assets`;
-  }
-  await $`cp -r crates/app/assets web/`;
+  await $`cp -r assets web/`;
   $.logLight("finish setup web fold");
 
   $.logStep("finish prepare Wasm Package");
