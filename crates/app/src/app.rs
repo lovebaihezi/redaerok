@@ -1,7 +1,11 @@
+use clap::Parser;
 use std::time::Duration;
 
 use crate::{
     camera::normal_camera,
+    components, pages,
+    resources::AppOptions,
+    show_fps_overlay,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 
@@ -10,7 +14,7 @@ use bevy::{
     dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
     prelude::*,
     text::FontSmoothing,
-    winit::WinitPlugin,
+    winit::{WinitPlugin, WinitSettings},
 };
 
 pub struct Game {
@@ -63,13 +67,32 @@ fn fps_plugin() -> FpsOverlayPlugin {
 
 impl Game {
     pub fn init(app_type: AppType) -> Self {
+        #[cfg(target_arch = "wasm32")]
+        let options = AppOptions::parse_from(&[""]);
+        #[cfg(not(target_arch = "wasm32"))]
+        let options = AppOptions::parse();
         let mut game = Game { app: App::new() };
         game.app
             .add_plugins((default_plugins(app_type), fps_plugin()))
+            .insert_resource(options)
+            .insert_resource(WinitSettings::desktop_app())
             .add_systems(Startup, normal_camera)
-            .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)));
+            .add_systems(Update, show_fps_overlay);
         match app_type {
-            AppType::Normal => {}
+            AppType::Normal => {
+                game.app
+                    .add_systems(Startup, pages::welcome::setup_welcome_ui)
+                    .add_systems(
+                        FixedUpdate,
+                        (
+                            components::viewer::txt::handle_new_text
+                                .after(components::viewer::txt::setup_txt_viewer),
+                            components::viewer::txt::txt_viewer_render_txt,
+                            components::viewer::txt::update_title_based_on_current_article,
+                        ),
+                    )
+                    .add_systems(Update, components::viewer::txt::txt_viewer_scroll_viewer);
+            }
             AppType::RenderToImageTesting => {
                 game.app
                     .add_systems(Startup, render_to_image_setup)
