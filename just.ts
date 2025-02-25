@@ -17,7 +17,7 @@ async function installLinuxDeps() {
 async function installWasmDeps() {
   await Promise.all([
     $`rustup component add rustc-codegen-cranelift-preview --toolchain nightly`,
-    $`cargo install -f wasm-bindgen-cli --version 0.2.95`,
+    $`cargo install -f wasm-bindgen-cli --version 0.2.97`,
     $`cargo install wasm-opt`,
   ]);
 }
