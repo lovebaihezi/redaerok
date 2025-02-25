@@ -1,0 +1,47 @@
+name: deploy-github-page
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: Install Dependencies
+        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
+      - name: Install trunk
+        uses: jetli/trunk-action@v0.4.0
+        with:
+          version: 'latest'
+      - name: Add wasm target
+        run: |
+          rustup target add wasm32-unknown-unknown
+      - uses: denoland/setup-deno@v2
+         with:
+           deno-version: v2.0.2
+      - name: Build, Optimize, And Prepare Wasm package
+         run: |
+          ./just.ts install-wasm-deps
+          ./just.ts build-wasm
+          ./just.ts prepare-wasm-package
+      - name: Deploy to Cloudflare Pages Preview
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: redaerok
+          directory: ./web
+          # Optional parameters
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.pull_request.head.ref }}
+          wranglerVersion: "3"
