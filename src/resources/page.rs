@@ -5,3 +5,5 @@ pub enum PageState {
     WelcomePage, // Root
     TxtReadPage,
 }
+
+pub fn on_page_switch() {}

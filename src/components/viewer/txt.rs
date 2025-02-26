@@ -60,34 +60,31 @@ pub fn setup_txt_viewer(
                     },
                 ))
                 .with_children(|parent| {
-                    parent
-                        .spawn((
-                            TxtTitle,
-                            Node {
-                                width: Val::Percent(100.0),
-                                flex_direction: FlexDirection::Row,
-                                justify_content: JustifyContent::Center,
-                                align_items: AlignItems::Center,
-                                padding: UiRect::all(Val::Px(4.0)),
-                                border: UiRect::bottom(Val::Px(0.5)),
-                                overflow: Overflow::scroll_x(),
-                                ..Default::default()
-                            },
-                            BorderColor::from(Color::WHITE),
-                        ))
-                        .with_child((
-                            Text::new("Untitled"),
-                            TextFont {
-                                font_size: 24.0,
-                                font,
-                                ..Default::default()
-                            },
-                            TextLayout {
-                                justify: JustifyText::Center,
-                                linebreak: LineBreak::WordOrCharacter,
-                            },
-                            TextColor::from(Color::WHITE),
-                        ));
+                    parent.spawn((
+                        TxtTitle,
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            padding: UiRect::all(Val::Px(4.0)),
+                            border: UiRect::bottom(Val::Px(0.5)),
+                            overflow: Overflow::scroll_x(),
+                            ..Default::default()
+                        },
+                        BorderColor::from(Color::WHITE),
+                        Text::new("Untitled"),
+                        TextFont {
+                            font_size: 24.0,
+                            font,
+                            ..Default::default()
+                        },
+                        TextLayout {
+                            justify: JustifyText::Center,
+                            linebreak: LineBreak::WordOrCharacter,
+                        },
+                        TextColor::from(Color::WHITE),
+                    ));
                     parent.spawn((
                         TxtBody,
                         Node {
@@ -192,25 +189,22 @@ pub fn txt_viewer_render_txt(
             for body in body_query.iter() {
                 if let Some(mut body) = command.get_entity(body) {
                     body.with_children(|parent| {
-                        parent
-                            .spawn((
-                                TxtPara,
-                                Node {
-                                    flex_direction: FlexDirection::Row,
-                                    padding: UiRect::all(Val::Px(4.0)),
-                                    width: Val::Auto,
-                                    height: Val::Auto,
-                                    ..Default::default()
-                                },
-                            ))
-                            .with_child((
-                                Text::new(raw_slice),
-                                TextFont {
-                                    font_size: 16.0,
-                                    font: font.clone(),
-                                    ..Default::default()
-                                },
-                            ));
+                        parent.spawn((
+                            TxtPara,
+                            Node {
+                                flex_direction: FlexDirection::Row,
+                                padding: UiRect::all(Val::Px(4.0)),
+                                width: Val::Auto,
+                                height: Val::Auto,
+                                ..Default::default()
+                            },
+                            Text::new(raw_slice),
+                            TextFont {
+                                font_size: 16.0,
+                                font: font.clone(),
+                                ..Default::default()
+                            },
+                        ));
                     });
                     command.run_system_cached(txt_viewer_render_txt);
                 }

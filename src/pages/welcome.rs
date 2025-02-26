@@ -71,7 +71,7 @@ pub fn setup_welcome_ui(mut commands: Commands) {
                         TextLayout {
                             justify: JustifyText::Center,
                             ..Default::default()
-                        }
+                        },
                     ));
             });
     });

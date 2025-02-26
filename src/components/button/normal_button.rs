@@ -1,4 +1,6 @@
-use bevy::{color::palettes::basic::*, prelude::*};
+use bevy::{
+    color::palettes::basic::*, prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon,
+};
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -34,28 +36,38 @@ pub trait NormalButton: Component + Sized {
 
     #[allow(clippy::type_complexity)]
     fn normal_button_update(
+        mut command: Commands,
         mut interaction_query: Query<
             (&Interaction, &mut BackgroundColor, &mut BorderColor),
             (Changed<Interaction>, With<Button>, With<Self>),
         >,
+        window: Single<Entity, With<Window>>,
     ) {
         interaction_query
             .iter_mut()
-            .for_each(
-                |(interaction, mut color, mut border_color)| match *interaction {
+            .for_each(|(interaction, mut color, mut border_color)| {
+                let pointer: CursorIcon = SystemCursorIcon::Pointer.into();
+                let normal: CursorIcon = SystemCursorIcon::Default.into();
+                match *interaction {
                     Interaction::Pressed => {
+                        command.entity(*window).remove::<CursorIcon>();
+                        command.entity(*window).insert(pointer);
                         *color = PRESSED_BUTTON.into();
                         border_color.0 = RED.into();
                     }
                     Interaction::Hovered => {
+                        command.entity(*window).remove::<CursorIcon>();
+                        command.entity(*window).insert(pointer);
                         *color = HOVERED_BUTTON.into();
                         border_color.0 = Color::WHITE;
                     }
                     Interaction::None => {
+                        command.entity(*window).remove::<CursorIcon>();
+                        command.entity(*window).insert(normal);
                         *color = NORMAL_BUTTON.into();
                         border_color.0 = Color::BLACK;
                     }
-                },
-            )
+                }
+            })
     }
 }
