@@ -81,7 +81,7 @@ pub fn setup_welcome_ui(mut commands: Commands) {
                         },
                     ));
                 parent
-                    .spawn(NormalButton::spawn_btn(JumpTextPageBtn))
+                    .spawn(NormalButton::spawn_btn(JumpAIChatPageBtn))
                     .with_child((
                         Node {
                             display: Display::Flex,
@@ -121,16 +121,10 @@ pub fn on_leave_welcome_ui(
     mut command: Commands,
     page_state: ResMut<PageState>,
     welcome_ui: Query<Option<Entity>, With<WelcomeUI>>,
-    window: Single<Entity, With<Window>>,
 ) {
     if *page_state != PageState::WelcomePage {
-        let normal: CursorIcon = SystemCursorIcon::Default.into();
         welcome_ui.iter().flatten().for_each(|ui_entity| {
             command.entity(ui_entity).despawn_recursive();
         });
-        command
-            .entity(*window)
-            .remove::<CursorIcon>()
-            .insert(normal);
     }
 }

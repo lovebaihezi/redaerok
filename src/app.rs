@@ -89,6 +89,7 @@ impl Game {
                         (
                             pages::welcome::on_click_txt_btn,
                             pages::welcome::JumpTextPageBtn::normal_button_update,
+                            pages::welcome::JumpAIChatPageBtn::normal_button_update,
                             pages::welcome::on_leave_welcome_ui,
                         ),
                     )
