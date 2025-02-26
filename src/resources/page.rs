@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Resource)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Component)]
 pub enum PageState {
     WelcomePage, // Root
     TxtReadPage,

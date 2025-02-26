@@ -10,6 +10,11 @@ pub struct JumpTextPageBtn;
 
 impl NormalButton for JumpTextPageBtn {}
 
+#[derive(Component)]
+pub struct JumpAIChatPageBtn;
+
+impl NormalButton for JumpAIChatPageBtn {}
+
 fn welcome_ui_base() -> (WelcomeUI, Node) {
     (
         WelcomeUI,
@@ -48,6 +53,8 @@ pub fn setup_welcome_ui(mut commands: Commands) {
         parent
             .spawn(Node {
                 display: Display::Flex,
+                column_gap: Val::Px(16.0),
+                row_gap: Val::Px(16.0),
                 ..Default::default()
             })
             .with_children(|parent| {
@@ -73,6 +80,29 @@ pub fn setup_welcome_ui(mut commands: Commands) {
                             ..Default::default()
                         },
                     ));
+                parent
+                    .spawn(NormalButton::spawn_btn(JumpTextPageBtn))
+                    .with_child((
+                        Node {
+                            display: Display::Flex,
+                            width: Val::Px(128.0),
+                            padding: UiRect::left(Val::Px(16.0)).with_right(Val::Px(16.0)),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..Default::default()
+                        },
+                        Text::new("AIChat"),
+                        TextColor(Color::WHITE),
+                        TextFont {
+                            font_size: 12.0,
+                            ..Default::default()
+                        },
+                        TextLayout {
+                            justify: JustifyText::Center,
+                            ..Default::default()
+                        },
+                    ));
+ 
             });
     });
 }
