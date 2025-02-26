@@ -32,7 +32,7 @@ pub enum AppType {
 fn default_plugins(app_type: AppType) -> PluginGroupBuilder {
     let primary_window = match app_type {
         AppType::Normal => Some(Window {
-            title: "Redaerok(Book Reader)".to_string(),
+            title: "Redaerok".to_string(),
             canvas: Some("#game".to_string()),
             fit_canvas_to_parent: true,
             ..Default::default()

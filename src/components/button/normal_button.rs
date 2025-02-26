@@ -1,11 +1,7 @@
-use bevy::{
-    prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon,
-};
+use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
 
 pub trait NormalButton: Component + Sized {
-    fn spawn_btn(
-        self,
-    ) -> impl Bundle {
+    fn spawn_btn(self) -> impl Bundle {
         (
             Button,
             self,
@@ -27,15 +23,19 @@ pub trait NormalButton: Component + Sized {
     fn normal_button_update(
         mut command: Commands,
         mut interaction_query: Query<
-            (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
+            (
+                &Interaction,
+                &mut BackgroundColor,
+                &mut BorderColor,
+                &Children,
+            ),
             (Changed<Interaction>, With<Button>, With<Self>),
         >,
         window: Single<Entity, With<Window>>,
         mut text_color_query: Query<&mut TextColor>,
     ) {
-        interaction_query
-            .iter_mut()
-            .for_each(|(interaction, mut bg_color, mut border_color, children)| {
+        interaction_query.iter_mut().for_each(
+            |(interaction, mut bg_color, mut border_color, children)| {
                 let pointer: CursorIcon = SystemCursorIcon::Pointer.into();
                 let normal: CursorIcon = SystemCursorIcon::Default.into();
                 match *interaction {
@@ -47,7 +47,6 @@ pub trait NormalButton: Component + Sized {
                         if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
                             **text_color = Color::WHITE;
                         }
- 
                     }
                     Interaction::Hovered => {
                         command.entity(*window).remove::<CursorIcon>();
@@ -68,6 +67,7 @@ pub trait NormalButton: Component + Sized {
                         }
                     }
                 }
-            })
+            },
+        )
     }
 }

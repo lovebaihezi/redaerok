@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Component)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Resource)]
 pub enum PageState {
     WelcomePage, // Root
     TxtReadPage,
+    AIChatPage,
 }
-
-pub fn on_page_switch() {}

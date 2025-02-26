@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::components::button::normal_button::NormalButton;
+use crate::{components::button::normal_button::NormalButton, resources::PageState};
 
 #[derive(Component)]
 pub struct WelcomeUI;
@@ -15,7 +15,7 @@ pub struct JumpAIChatPageBtn;
 
 impl NormalButton for JumpAIChatPageBtn {}
 
-fn welcome_ui_base() -> (WelcomeUI, Node) {
+fn welcome_ui_base() -> impl Bundle {
     (
         WelcomeUI,
         Node {
@@ -32,7 +32,7 @@ fn welcome_ui_base() -> (WelcomeUI, Node) {
     )
 }
 
-fn welcome_ui_message() -> (Text, TextFont, TextLayout, TextColor) {
+fn welcome_ui_message() -> impl Bundle {
     (
         Text::new("Welcome To Redaerok!"),
         TextFont {
@@ -102,7 +102,18 @@ pub fn setup_welcome_ui(mut commands: Commands) {
                             ..Default::default()
                         },
                     ));
- 
             });
     });
+}
+
+pub fn on_leave_welcome_ui(
+    mut command: Commands,
+    page_state: ResMut<PageState>,
+    welcome_ui: Query<Entity, With<WelcomeUI>>,
+) {
+    if *page_state == PageState::WelcomePage {
+        welcome_ui.iter().for_each(|ui_entity| {
+            command.entity(ui_entity).despawn_recursive();
+        })
+    }
 }
