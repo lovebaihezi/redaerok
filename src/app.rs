@@ -83,14 +83,14 @@ impl Game {
         match app_type {
             AppType::Normal => {
                 game.app
-                    .add_systems(Startup, pages::welcome::setup_welcome_ui)
                     .add_systems(
                         FixedUpdate,
                         (
+                            pages::welcome::manage_welcome_ui,
                             pages::welcome::on_click_txt_btn,
                             pages::welcome::JumpTextPageBtn::normal_button_update,
                             pages::welcome::JumpAIChatPageBtn::normal_button_update,
-                            pages::welcome::on_leave_welcome_ui,
+                            pages::txt_reader::manage_text_ui,
                         ),
                     )
                     .add_systems(

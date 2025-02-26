@@ -40,8 +40,10 @@ pub trait NormalButton: Component + Sized {
                 let normal: CursorIcon = SystemCursorIcon::Default.into();
                 match *interaction {
                     Interaction::Pressed => {
-                        command.entity(*window).remove::<CursorIcon>();
-                        command.entity(*window).insert(normal);
+                        command
+                            .entity(*window)
+                            .remove::<CursorIcon>()
+                            .insert(normal);
                         *bg_color = Color::BLACK.into();
                         border_color.0 = Color::WHITE;
                         if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
@@ -49,8 +51,10 @@ pub trait NormalButton: Component + Sized {
                         }
                     }
                     Interaction::Hovered => {
-                        command.entity(*window).remove::<CursorIcon>();
-                        command.entity(*window).insert(pointer);
+                        command
+                            .entity(*window)
+                            .remove::<CursorIcon>()
+                            .insert(pointer);
                         *bg_color = Color::WHITE.into();
                         border_color.0 = Color::BLACK;
                         if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
@@ -58,8 +62,10 @@ pub trait NormalButton: Component + Sized {
                         }
                     }
                     Interaction::None => {
-                        command.entity(*window).remove::<CursorIcon>();
-                        command.entity(*window).insert(normal);
+                        command
+                            .entity(*window)
+                            .remove::<CursorIcon>()
+                            .insert(pointer);
                         *bg_color = Color::BLACK.into();
                         border_color.0 = Color::WHITE;
                         if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
