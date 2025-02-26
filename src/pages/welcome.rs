@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
 
 use crate::{components::button::normal_button::NormalButton, resources::PageState};
 
@@ -106,14 +106,31 @@ pub fn setup_welcome_ui(mut commands: Commands) {
     });
 }
 
+pub fn on_click_txt_btn(
+    mut page_state: ResMut<PageState>,
+    mut query: Query<(&Interaction, &JumpTextPageBtn)>,
+) {
+    for (interaction, _) in query.iter_mut() {
+        if *interaction == Interaction::Pressed {
+            *page_state = PageState::TxtReadPage;
+        }
+    }
+}
+
 pub fn on_leave_welcome_ui(
     mut command: Commands,
     page_state: ResMut<PageState>,
-    welcome_ui: Query<Entity, With<WelcomeUI>>,
+    welcome_ui: Query<Option<Entity>, With<WelcomeUI>>,
+    window: Single<Entity, With<Window>>,
 ) {
-    if *page_state == PageState::WelcomePage {
-        welcome_ui.iter().for_each(|ui_entity| {
+    if *page_state != PageState::WelcomePage {
+        let normal: CursorIcon = SystemCursorIcon::Default.into();
+        welcome_ui.iter().flatten().for_each(|ui_entity| {
             command.entity(ui_entity).despawn_recursive();
-        })
+        });
+        command
+            .entity(*window)
+            .remove::<CursorIcon>()
+            .insert(normal);
     }
 }

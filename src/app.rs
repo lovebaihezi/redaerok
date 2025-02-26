@@ -5,7 +5,7 @@ use crate::{
     camera::normal_camera,
     components::{self, button::normal_button::NormalButton},
     pages,
-    resources::AppOptions,
+    resources::{AppOptions, PageState},
     setup_game_control, show_fps_overlay,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
@@ -77,6 +77,7 @@ impl Game {
             .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(options)
             .insert_resource(WinitSettings::desktop_app())
+            .insert_resource(PageState::WelcomePage)
             .add_systems(Startup, (normal_camera, setup_game_control))
             .add_systems(Update, show_fps_overlay);
         match app_type {
@@ -85,13 +86,20 @@ impl Game {
                     .add_systems(Startup, pages::welcome::setup_welcome_ui)
                     .add_systems(
                         FixedUpdate,
-                        (pages::welcome::JumpTextPageBtn::normal_button_update,),
+                        (
+                            pages::welcome::on_click_txt_btn,
+                            pages::welcome::JumpTextPageBtn::normal_button_update,
+                            pages::welcome::on_leave_welcome_ui,
+                        ),
                     )
                     .add_systems(
                         FixedUpdate,
                         (
-                            components::viewer::txt::handle_new_text
-                                .after(components::viewer::txt::setup_txt_viewer),
+                            (
+                                components::viewer::txt::handle_new_text,
+                                components::viewer::txt::setup_txt_viewer,
+                            )
+                                .chain(),
                             components::viewer::txt::txt_viewer_render_txt,
                             components::viewer::txt::update_title_based_on_current_article,
                         ),
