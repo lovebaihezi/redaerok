@@ -76,33 +76,28 @@ pub fn manage_text_ui(
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Start,
                         width: Val::Percent(100.0),
-                        height: Val::Px(4.0),
+                        height: Val::Px(40.0),
                         border: UiRect::bottom(Val::Px(1.0)),
-                        padding: UiRect::all(Val::Px(16.0)),
                         ..Default::default()
                     },
                     BorderColor::from(Color::WHITE),
                 ))
-                .with_child(BackToRootBtn::spawn_btn(BackToRootBtn))
-                .with_child((
-                    Node {
-                        padding: UiRect::all(Val::Px(4.0)),
-                        border: UiRect::all(Val::Px(2.0)),
-                        ..Default::default()
-                    },
-                    BorderColor::from(Color::WHITE),
-                )).insert((
-                    Text::new("/"),
-                    TextColor(Color::WHITE),
-                    TextFont {
-                        font_size: 16.0,
-                        ..Default::default()
-                    },
-                    TextLayout {
-                        justify: JustifyText::Center,
-                        ..Default::default()
-                    },
-                ));
+                .with_children(|parent| {
+                    parent
+                        .spawn(BackToRootBtn::spawn_btn(BackToRootBtn))
+                        .with_child((
+                            Text::new("Root"),
+                            TextColor(Color::WHITE),
+                            TextFont {
+                                font_size: 16.0,
+                                ..Default::default()
+                            },
+                            TextLayout {
+                                justify: JustifyText::Center,
+                                ..Default::default()
+                            },
+                        ));
+                });
             parent
                 .spawn(Node {
                     display: Display::Flex,
