@@ -84,7 +84,7 @@ impl Game {
             AppType::Normal => {
                 game.app
                     .add_systems(
-                        FixedUpdate,
+                        Update,
                         (
                             pages::welcome::manage_welcome_ui,
                             pages::welcome::on_click_txt_btn,
@@ -92,11 +92,7 @@ impl Game {
                             pages::welcome::JumpAIChatPageBtn::normal_button_update,
                             pages::txt_reader::manage_text_ui,
                             pages::txt_reader::BackToRootBtn::normal_button_update,
-                        ),
-                    )
-                    .add_systems(
-                        FixedUpdate,
-                        (
+                            pages::txt_reader::on_click_back_to_root_btn,
                             (
                                 components::viewer::txt::handle_new_text,
                                 components::viewer::txt::setup_txt_viewer,

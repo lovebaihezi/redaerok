@@ -127,3 +127,14 @@ pub fn manage_text_ui(
         })
     }
 }
+
+pub fn on_click_back_to_root_btn(
+    mut page_state: ResMut<PageState>,
+    mut query: Query<(&Interaction, &BackToRootBtn)>,
+) {
+    for (interaction, _) in query.iter_mut() {
+        if *interaction == Interaction::Pressed {
+            *page_state = PageState::WelcomePage;
+        }
+    }
+}
