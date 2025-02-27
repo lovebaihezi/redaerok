@@ -65,7 +65,7 @@ pub trait NormalButton: Component + Sized {
                         command
                             .entity(*window)
                             .remove::<CursorIcon>()
-                            .insert(pointer);
+                            .insert(normal);
                         *bg_color = Color::BLACK.into();
                         border_color.0 = Color::WHITE;
                         if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {

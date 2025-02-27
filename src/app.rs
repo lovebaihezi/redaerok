@@ -91,6 +91,7 @@ impl Game {
                             pages::welcome::JumpTextPageBtn::normal_button_update,
                             pages::welcome::JumpAIChatPageBtn::normal_button_update,
                             pages::txt_reader::manage_text_ui,
+                            pages::txt_reader::BackToRootBtn::normal_button_update,
                         ),
                     )
                     .add_systems(
