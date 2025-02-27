@@ -36,7 +36,7 @@ fn welcome_ui_message() -> impl Bundle {
     (
         Text::new("Welcome To Redaerok!"),
         TextFont {
-            font_size: 32.0,
+            font_size: 48.0,
             ..Default::default()
         },
         TextLayout {
@@ -57,7 +57,7 @@ fn welcome_jump_to_txt() -> impl Bundle {
             align_items: AlignItems::Center,
             ..Default::default()
         },
-        Text::new("TXT"),
+        Text::new("Reader"),
         TextColor(Color::WHITE),
         TextFont {
             font_size: 12.0,
@@ -80,7 +80,7 @@ fn welcome_jump_to_aichat() -> impl Bundle {
             align_items: AlignItems::Center,
             ..Default::default()
         },
-        Text::new("AIChat"),
+        Text::new("AI Chat"),
         TextColor(Color::WHITE),
         TextFont {
             font_size: 12.0,

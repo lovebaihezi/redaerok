@@ -2,26 +2,39 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     picking::focus::HoverMap,
     prelude::*,
-    tasks::{AsyncComputeTaskPool, Task},
     utils::futures,
 };
 
 use flume::Receiver;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Resource)]
-pub struct RawTxt {
-    name: String,
-    raw: String,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-struct Paragraph {
-    index: usize,
-    content: [usize; 2],
+pub struct Paragraph {
+    pub index: usize,
+    pub content: [usize; 2],
 }
 
 #[derive(Component)]
 pub struct TxtBase;
+
+impl TxtBase {
+    pub fn render(self) -> impl Bundle {
+        (
+            self,
+            Node {
+                flex_direction: FlexDirection::Column,
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                padding: UiRect::new(
+                    Val::Percent(3.0),
+                    Val::Percent(3.0),
+                    Val::Px(16.0),
+                    Val::Px(16.0),
+                ),
+                ..Default::default()
+            },
+        )
+    }
+}
 
 #[derive(Component)]
 pub struct TxtTitle;
@@ -32,143 +45,59 @@ pub struct TxtBody;
 #[derive(Component)]
 pub struct TxtPara;
 
+#[derive(Resource, Clone)]
+pub struct RawTxt {
+    pub name: String,
+    pub raw: String,
+}
+
 #[derive(Resource)]
-pub struct ParagraphRecv(Receiver<Paragraph>);
+pub struct ParagraphRecv(pub Receiver<Paragraph>);
 
-pub fn setup_txt_viewer(
-    mut command: Commands,
-    txt_base_query: Query<Entity, With<TxtBase>>,
-    assets: Res<AssetServer>,
-) {
-    let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
-    if let Ok(txt_base) = txt_base_query.get_single() {
-        if let Some(mut entity_cmd) = command.get_entity(txt_base) {
-            entity_cmd
-                .with_child((
-                    TxtBase,
-                    Node {
-                        flex_direction: FlexDirection::Column,
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        padding: UiRect::new(
-                            Val::Percent(3.0),
-                            Val::Percent(3.0),
-                            Val::Px(16.0),
-                            Val::Px(16.0),
-                        ),
-                        ..Default::default()
-                    },
-                ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        TxtTitle,
-                        Node {
-                            width: Val::Percent(100.0),
-                            flex_direction: FlexDirection::Row,
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            padding: UiRect::all(Val::Px(4.0)),
-                            border: UiRect::bottom(Val::Px(0.5)),
-                            overflow: Overflow::scroll_x(),
-                            ..Default::default()
-                        },
-                        BorderColor::from(Color::WHITE),
-                        Text::new("Untitled"),
-                        TextFont {
-                            font_size: 24.0,
-                            font,
-                            ..Default::default()
-                        },
-                        TextLayout {
-                            justify: JustifyText::Center,
-                            linebreak: LineBreak::WordOrCharacter,
-                        },
-                        TextColor::from(Color::WHITE),
-                    ));
-                    parent.spawn((
-                        TxtBody,
-                        Node {
-                            flex_direction: FlexDirection::Column,
-                            width: Val::Percent(100.0),
-                            height: Val::Percent(100.0),
-                            overflow: Overflow::scroll_y(),
-                            padding: UiRect::all(Val::Px(4.0)),
-                            ..Default::default()
-                        },
-                        PickingBehavior {
-                            is_hoverable: true,
-                            should_block_lower: true,
-                        },
-                    ));
-                });
-        }
-    }
+pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
+    parent.spawn((
+        TxtTitle,
+        Node {
+            width: Val::Percent(100.0),
+            flex_direction: FlexDirection::Row,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            padding: UiRect::all(Val::Px(4.0)),
+            border: UiRect::bottom(Val::Px(0.5)),
+            overflow: Overflow::scroll_x(),
+            ..Default::default()
+        },
+        BorderColor::from(Color::WHITE),
+        Text::new("Untitled"),
+        TextFont {
+            font_size: 24.0,
+            font,
+            ..Default::default()
+        },
+        TextLayout {
+            justify: JustifyText::Center,
+            linebreak: LineBreak::WordOrCharacter,
+        },
+        TextColor::from(Color::WHITE),
+    ));
+    parent.spawn((
+        TxtBody,
+        Node {
+            flex_direction: FlexDirection::Column,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            overflow: Overflow::scroll_y(),
+            padding: UiRect::all(Val::Px(4.0)),
+            ..Default::default()
+        },
+        PickingBehavior {
+            is_hoverable: true,
+            should_block_lower: true,
+        },
+    ));
 }
 
-#[derive(Component)]
-pub struct RawTxtAsync(Task<Option<RawTxt>>);
-
-pub fn pick_file_using_rfs(mut command: Commands) {
-    let pool = AsyncComputeTaskPool::get();
-    let file_handle: Task<Option<RawTxt>> = pool.spawn(async move {
-        let afd = rfd::AsyncFileDialog::new();
-        if let Some(file) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
-            let file_name = file.file_name();
-            let file_content = file.read().await;
-            Some(RawTxt {
-                name: file_name,
-                //TODO(chaibowen): the content may not encode in utf-8, should support it
-                raw: String::from_utf8_lossy(&file_content).to_string(),
-            })
-        } else {
-            None
-        }
-    });
-    command.spawn(RawTxtAsync(file_handle));
-}
-
-pub fn handle_new_text(mut command: Commands, mut raw_txt_tasks: Query<&mut RawTxtAsync>) {
-    for mut task in raw_txt_tasks.iter_mut() {
-        if let Some(Some(raw_text)) = futures::check_ready(&mut task.0) {
-            command.insert_resource(raw_text.clone());
-            let (sender, receiver) = flume::unbounded::<Paragraph>();
-            command.insert_resource(ParagraphRecv(receiver));
-            let task_pool = AsyncComputeTaskPool::get();
-            task_pool
-                .spawn(async move {
-                    let mut start = 0usize;
-                    for (index, line) in raw_text.raw.lines().enumerate() {
-                        let paragraph = Paragraph {
-                            index,
-                            content: [start, start + line.len()],
-                        };
-                        start += line.len() + 1;
-                        sender.send_async(paragraph).await.unwrap();
-                    }
-                })
-                .detach();
-        }
-    }
-}
-
-pub fn update_title_based_on_current_article(
-    raw_text: Res<RawTxt>,
-    txt_title_query: Query<&Children, With<TxtTitle>>,
-    mut text_query: Query<&mut Text>,
-    mut window: Query<&mut Window>,
-) {
-    let mut window = window.single_mut();
-    if window.name.as_ref() == Some(&raw_text.name) {
-        return;
-    }
-    for txt_title in &mut txt_title_query.iter() {
-        let mut content = text_query.get_mut(txt_title[0]).unwrap();
-        **content = raw_text.name.to_string();
-    }
-    window.name = Some(raw_text.name.to_string());
-}
-
-pub fn txt_viewer_render_txt(
+pub fn add_pagegraph(
     mut channel: ResMut<ParagraphRecv>,
     mut command: Commands,
     raw_text: Res<RawTxt>,
@@ -206,7 +135,7 @@ pub fn txt_viewer_render_txt(
                             },
                         ));
                     });
-                    command.run_system_cached(txt_viewer_render_txt);
+                    command.run_system_cached(add_pagegraph);
                 }
             }
         }
