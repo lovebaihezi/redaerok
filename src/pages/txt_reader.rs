@@ -48,6 +48,7 @@ pub struct ReadUITitle;
 pub struct ReaderHint;
 
 pub fn txt_ui_message() -> impl Bundle {
+    info!("Renderd Once");
     (
         ReadUITitle,
         Text::new("Text Reader"),
@@ -154,10 +155,10 @@ pub fn manage_text_ui(
     txt_ui: Query<Option<Entity>, With<TxtReader>>,
     mut title: Query<Option<&mut Text>, With<ReadUITitle>>,
 ) {
-    info!("Page State: {:?}", *page_state);
     match *page_state {
         PageState::TxtReadPage(TxtReaderState::None) => {
             if txt_ui.is_empty() {
+                debug!("Creating text UI");
                 commands.spawn(txt_ui_base()).with_children(|parent| {
                     parent.spawn(top_banner()).with_children(back_root);
                     parent
@@ -177,9 +178,9 @@ pub fn manage_text_ui(
             });
         }
         PageState::TxtReadPage(TxtReaderState::WaitForLoadingFile(ref file_name)) => {
-            if let Some(mut title) = title.single_mut() {
+            title.iter_mut().flatten().for_each(|mut title| {
                 *title = format!("Loading file: {}", &file_name).into();
-            }
+            })
         }
         PageState::TxtReadPage(TxtReaderState::PreDisplaying) => {
             txt_ui.iter().flatten().for_each(|entity| {
@@ -187,6 +188,7 @@ pub fn manage_text_ui(
             });
         }
         _ => txt_ui.iter().flatten().for_each(|entity| {
+            debug!("Clean up Text UI");
             commands.entity(entity).despawn_recursive();
         }),
     }
@@ -210,20 +212,23 @@ pub struct FileHandleAysnc(Task<Option<FileHandle>>);
 pub struct RawTxtAsync(Task<RawTxt>);
 
 pub fn on_click_open_local_file(
-    mut query: Query<(&Interaction, &OpenFilePickerBtn)>,
+    query: Query<&Interaction, With<OpenFilePickerBtn>>,
     mut command: Commands,
     mut state: ResMut<PageState>,
 ) {
-    for (interaction, _) in query.iter_mut() {
-        if *interaction == Interaction::Pressed {
-            *state = PageState::TxtReadPage(TxtReaderState::WaitForRFD);
-            let pool = AsyncComputeTaskPool::get();
-            let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
-                let afd = rfd::AsyncFileDialog::new();
-                afd.add_filter("text", &["txt", "md"]).pick_file().await
-            });
-            command.spawn(FileHandleAysnc(file_handle));
-            *state = PageState::TxtReadPage(TxtReaderState::WaitForUserSelecting);
+    if let Ok(interaction) = query.get_single() {
+        match (interaction, state.as_mut()) {
+            (Interaction::Pressed, PageState::TxtReadPage(TxtReaderState::None)) => {
+                *state = PageState::TxtReadPage(TxtReaderState::WaitForRFD);
+                let pool = AsyncComputeTaskPool::get();
+                let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
+                    let afd = rfd::AsyncFileDialog::new();
+                    afd.add_filter("text", &["txt", "md"]).pick_file().await
+                });
+                command.spawn(FileHandleAysnc(file_handle));
+                *state = PageState::TxtReadPage(TxtReaderState::WaitForUserSelecting);
+            }
+            _ => {}
         }
     }
 }
