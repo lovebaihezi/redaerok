@@ -177,7 +177,7 @@ pub fn despawn_text_ui(mut commands: Commands, txt_ui: Query<Entity, With<TxtRea
 // TODO: 不在State里存title, 应当是生成到TxtBase Component再读取
 pub fn indicates_wait_for_file_preparation(mut title: Query<Option<&mut Text>, With<ReadUITitle>>) {
     title.iter_mut().flatten().for_each(|mut title| {
-        *title = format!("Loading file").into();
+        *title = "Loading file".to_string().into();
     });
 }
 
