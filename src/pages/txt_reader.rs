@@ -48,7 +48,7 @@ pub struct ReadUITitle;
 pub struct ReaderHint;
 
 pub fn txt_ui_message() -> impl Bundle {
-    info!("Renderd Once");
+    info!("Rendered Once");
     (
         ReadUITitle,
         Text::new("Text Reader"),
