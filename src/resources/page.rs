@@ -15,14 +15,14 @@ pub enum TxtReaderState {
 
 impl PartialEq for TxtReaderState {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Welcome, Self::Welcome) => true,
-            (Self::WaitForUserSelecting, Self::WaitForUserSelecting) => true,
-            (Self::WaitForLoadingFile(_), Self::WaitForLoadingFile(_)) => true,
-            (Self::PreDisplaying, Self::PreDisplaying) => true,
-            (Self::Displaying, Self::Displaying) => true,
-            _ => false,
-        }
+        matches!(
+            (self, other),
+            (Self::Welcome, Self::Welcome)
+                | (Self::WaitForUserSelecting, Self::WaitForUserSelecting)
+                | (Self::WaitForLoadingFile(_), Self::WaitForLoadingFile(_))
+                | (Self::PreDisplaying, Self::PreDisplaying)
+                | (Self::Displaying, Self::Displaying)
+        )
     }
 }
 
