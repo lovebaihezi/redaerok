@@ -1,7 +1,7 @@
 use bevy::{
     prelude::*,
     tasks::{block_on, poll_once, AsyncComputeTaskPool, Task},
-    utils::{futures, info},
+    utils::info,
 };
 use rfd::FileHandle;
 
@@ -195,6 +195,20 @@ pub fn indicates_wait_for_file_preparation(
     }
 }
 
+pub fn remove_txt_messages_for_showing_file(
+    body: Query<Entity, With<TxtUIBody>>,
+    mut commands: Commands,
+    children: Query<&Children>,
+) {
+    body.iter().for_each(|entity| {
+        if let Ok(children) = children.get(entity) {
+            children.iter().for_each(|child| {
+                commands.entity(*child).despawn_recursive();
+            });
+        }
+    });
+}
+
 pub fn on_click_back_to_root_btn(
     mut next_page_state: ResMut<NextState<PageState>>,
     mut query: Query<(&Interaction, &BackToRootBtn)>,
@@ -205,7 +219,7 @@ pub fn on_click_back_to_root_btn(
         }
     }
 }
-
+// TODO: Task塞到TxtBody里, 这样就不用再手动的卸除Task
 #[derive(Component)]
 pub struct FileHandleAysnc(Task<Option<FileHandle>>);
 
@@ -236,12 +250,13 @@ pub fn on_click_open_local_file(
 
 pub fn read_file(
     mut command: Commands,
-    mut file_handles: Query<&mut FileHandleAysnc>,
+    mut file_handles: Query<(Entity, &mut FileHandleAysnc)>,
     mut next_reader_state: ResMut<NextState<TxtReaderState>>,
 ) {
-    file_handles.iter_mut().for_each(|mut task| {
+    file_handles.iter_mut().for_each(|(entity, mut task)| {
         if let Some(Some(handle)) = block_on(poll_once(&mut task.0)) {
             info!("Got handle");
+            command.entity(entity).despawn();
             next_reader_state.set(TxtReaderState::WaitForLoadingFile(handle.file_name()));
             let pool = AsyncComputeTaskPool::get();
             let raw_txt: Task<RawTxt> = pool.spawn(async move {
@@ -259,17 +274,19 @@ pub fn read_file(
 
 pub fn handle_new_text(
     mut command: Commands,
-    mut raw_txt_tasks: Query<&mut RawTxtAsync>,
+    mut raw_txt_tasks: Query<(Entity, &mut RawTxtAsync)>,
     mut window: Query<&mut Window>,
     assets: ResMut<AssetServer>,
     body: Query<Entity, With<TxtUIBody>>,
     mut next_reader_state: ResMut<NextState<TxtReaderState>>,
 ) {
     let font: Handle<Font> = assets.load("fonts/SourceHanSerifCN-VF.ttf");
-    raw_txt_tasks.iter_mut().for_each(|mut task| {
-        if let Some(raw_text) = futures::check_ready(&mut task.0) {
+    raw_txt_tasks.iter_mut().for_each(|(entity, mut task)| {
+        if let Some(raw_text) = block_on(poll_once(&mut task.0)) {
+            command.entity(entity).despawn_recursive();
             let (sender, receiver) = flume::unbounded::<Paragraph>();
             command.insert_resource(ParagraphRecv(receiver));
+            command.run_system_cached(remove_txt_messages_for_showing_file);
 
             next_reader_state.set(TxtReaderState::PreDisplaying);
             let title = raw_text.name.clone();
