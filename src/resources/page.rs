@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+use std::hash::{Hash, Hasher};
 
-#[derive(SubStates, Debug, Clone, Hash, Default)]
+#[derive(SubStates, Debug, Clone, Default)]
 #[source(PageState = PageState::TxtReadPage)]
 pub enum TxtReaderState {
     #[default]
@@ -21,6 +22,18 @@ impl PartialEq for TxtReaderState {
             (Self::PreDisplaying, Self::PreDisplaying) => true,
             (Self::Displaying, Self::Displaying) => true,
             _ => false,
+        }
+    }
+}
+
+impl Hash for TxtReaderState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Self::Welcome => 0.hash(state),
+            Self::WaitForUserSelecting => 1.hash(state),
+            Self::WaitForLoadingFile(_) => 2.hash(state),
+            Self::PreDisplaying => 3.hash(state),
+            Self::Displaying => 4.hash(state),
         }
     }
 }

@@ -2,6 +2,8 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     picking::focus::HoverMap,
     prelude::*,
+    window::SystemCursorIcon,
+    winit::cursor::CursorIcon,
 };
 
 use flume::Receiver;
@@ -94,6 +96,28 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
             should_block_lower: true,
         },
     ));
+}
+
+pub fn txt_viewer_cursor(
+    interactions: Query<&Interaction, (Changed<Interaction>, With<Text>)>,
+    mut command: Commands,
+    window: Single<Entity, With<Window>>,
+) {
+    interactions
+        .iter()
+        .for_each(|interaction| match interaction {
+            Interaction::Hovered => {
+                let edit: CursorIcon = SystemCursorIcon::Text.into();
+                command.entity(*window).remove::<CursorIcon>().insert(edit);
+            }
+            _ => {
+                let normal: CursorIcon = SystemCursorIcon::Default.into();
+                command
+                    .entity(*window)
+                    .remove::<CursorIcon>()
+                    .insert(normal);
+            }
+        });
 }
 
 pub fn txt_viewer_scroll_viewer(

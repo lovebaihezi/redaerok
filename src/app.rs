@@ -4,14 +4,14 @@ use std::time::Duration;
 use crate::{
     camera::normal_camera,
     components::{
-        button::normal_button::normal_button_update, viewer::txt::txt_viewer_scroll_viewer,
+        button::normal_button::normal_button_update,
+        viewer::txt::{txt_viewer_cursor, txt_viewer_scroll_viewer},
     },
     pages::{
         self,
         txt_reader::{
             despawn_text_ui, indicates_wait_for_file_preparation,
-            indicates_wait_for_user_selecting,
-            spawn_text_welcome_ui,
+            indicates_wait_for_user_selecting, spawn_text_welcome_ui,
         },
         welcome::{despawn_welcome_ui, on_click_txt_btn, spawn_welcome_ui},
     },
@@ -141,7 +141,14 @@ impl Game {
                         ),
                     )
                     // Txt Reader Page Wait for File Preparation
-                    .add_systems(Update, (txt_viewer_scroll_viewer, normal_button_update));
+                    .add_systems(
+                        Update,
+                        (
+                            txt_viewer_scroll_viewer,
+                            normal_button_update,
+                            txt_viewer_cursor,
+                        ),
+                    );
             }
             AppType::RenderToImageTesting => {
                 game.app

@@ -181,6 +181,7 @@ pub fn indicates_wait_for_user_selecting(mut title: Query<Option<&mut Text>, Wit
     });
 }
 
+// TOOD: 不在State里存title, 应当是生成到TxtBase Component再读取
 pub fn indicates_wait_for_file_preparation(
     mut title: Query<Option<&mut Text>, With<ReadUITitle>>,
     reader_state: Res<State<TxtReaderState>>,
@@ -211,9 +212,9 @@ pub fn remove_txt_messages_for_showing_file(
 
 pub fn on_click_back_to_root_btn(
     mut next_page_state: ResMut<NextState<PageState>>,
-    mut query: Query<(&Interaction, &BackToRootBtn)>,
+    mut query: Query<&Interaction, (With<BackToRootBtn>, Changed<Interaction>)>,
 ) {
-    for (interaction, _) in query.iter_mut() {
+    for interaction in query.iter_mut() {
         if *interaction == Interaction::Pressed {
             next_page_state.set(PageState::WelcomePage);
         }
@@ -227,14 +228,13 @@ pub struct FileHandleAsync(Task<Option<FileHandle>>);
 pub struct RawTxtAsync(Task<RawTxt>);
 
 pub fn on_click_open_local_file(
-    interactions: Query<&Interaction, With<OpenFilePickerBtn>>,
+    interactions: Query<&Interaction, (Changed<Interaction>, With<OpenFilePickerBtn>)>,
     mut command: Commands,
     reader_state: Res<State<TxtReaderState>>,
     mut next_reader_state: ResMut<NextState<TxtReaderState>>,
 ) {
-    interactions
-        .iter()
-        .for_each(|interaction| if let (Interaction::Pressed, TxtReaderState::Welcome) = (interaction, reader_state.get()) {
+    interactions.iter().for_each(|interaction| {
+        if let (Interaction::Pressed, TxtReaderState::Welcome) = (interaction, reader_state.get()) {
             next_reader_state.set(TxtReaderState::WaitForUserSelecting);
             let pool = AsyncComputeTaskPool::get();
             let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
@@ -242,7 +242,8 @@ pub fn on_click_open_local_file(
                 afd.add_filter("text", &["txt", "md"]).pick_file().await
             });
             command.spawn(FileHandleAsync(file_handle));
-        });
+        }
+    });
 }
 
 pub fn read_file(
