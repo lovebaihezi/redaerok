@@ -49,10 +49,15 @@ fn default_plugins(app_type: AppType) -> PluginGroupBuilder {
         }),
         AppType::RenderToImageTesting => None,
     };
-    let plugin = DefaultPlugins.set(WindowPlugin {
-        primary_window,
-        ..Default::default()
-    });
+    let plugin = DefaultPlugins
+        .set(WindowPlugin {
+            primary_window,
+            ..Default::default()
+        })
+        .set(AssetPlugin {
+            meta_check: bevy::asset::AssetMetaCheck::Never,
+            ..Default::default()
+        });
     match app_type {
         AppType::RenderToImageTesting => plugin
             .disable::<WinitPlugin>()
