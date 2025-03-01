@@ -93,12 +93,12 @@ fn welcome_jump_to_aichat() -> impl Bundle {
     )
 }
 
-pub fn manage_welcome_ui(
+pub fn spawn_welcome_ui(
     mut commands: Commands,
-    page_state: ResMut<PageState>,
     welcome_ui: Query<Option<Entity>, With<WelcomeUI>>,
 ) {
-    if *page_state == PageState::WelcomePage && welcome_ui.is_empty() {
+    if welcome_ui.is_empty() {
+        info!("Drawing Welcome UI");
         commands.spawn(welcome_ui_base()).with_children(|parent| {
             parent.spawn(welcome_ui_message());
             parent
@@ -117,7 +117,15 @@ pub fn manage_welcome_ui(
                         .with_child(welcome_jump_to_aichat());
                 });
         });
-    } else if *page_state != PageState::WelcomePage {
+    }
+}
+
+pub fn despawn_welcome_ui(
+    mut commands: Commands,
+    welcome_ui: Query<Option<Entity>, With<WelcomeUI>>,
+) {
+    if !welcome_ui.is_empty() {
+        info!("Clean up Welcome UI");
         welcome_ui.iter().flatten().for_each(|ui_entity| {
             commands.entity(ui_entity).despawn_recursive();
         });
@@ -125,12 +133,12 @@ pub fn manage_welcome_ui(
 }
 
 pub fn on_click_txt_btn(
-    mut page_state: ResMut<PageState>,
+    mut next_page_state: ResMut<NextState<PageState>>,
     mut query: Query<(&Interaction, &JumpTextPageBtn)>,
 ) {
     for (interaction, _) in query.iter_mut() {
         if *interaction == Interaction::Pressed {
-            *page_state = PageState::txt_read_page();
+            next_page_state.set(PageState::txt_read_page());
         }
     }
 }

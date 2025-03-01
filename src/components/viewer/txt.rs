@@ -2,7 +2,6 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     picking::focus::HoverMap,
     prelude::*,
-    utils::futures,
 };
 
 use flume::Receiver;
@@ -95,55 +94,6 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
             should_block_lower: true,
         },
     ));
-}
-
-pub fn add_pagegraph(
-    mut channel: ResMut<ParagraphRecv>,
-    mut command: Commands,
-    raw_text: Res<RawTxt>,
-    body_query: Query<Entity, With<TxtBody>>,
-    asset_server: ResMut<AssetServer>,
-) {
-    let font = asset_server.load("fonts/SourceHanSerifCN-VF.ttf");
-    let channel = channel.as_mut();
-    let rec = channel.0.clone();
-    if rec.is_empty() {
-        return;
-    }
-    let mut paragraph_async = rec.recv_async();
-    match futures::check_ready(&mut paragraph_async) {
-        Some(Ok(pragraph)) => {
-            let content_indexes = pragraph.content;
-            let raw_slice = &raw_text.raw[content_indexes[0]..content_indexes[1]];
-            for body in body_query.iter() {
-                if let Some(mut body) = command.get_entity(body) {
-                    body.with_children(|parent| {
-                        parent.spawn((
-                            TxtPara,
-                            Node {
-                                flex_direction: FlexDirection::Row,
-                                padding: UiRect::all(Val::Px(4.0)),
-                                width: Val::Auto,
-                                height: Val::Auto,
-                                ..Default::default()
-                            },
-                            Text::new(raw_slice),
-                            TextFont {
-                                font_size: 16.0,
-                                font: font.clone(),
-                                ..Default::default()
-                            },
-                        ));
-                    });
-                    command.run_system_cached(add_pagegraph);
-                }
-            }
-        }
-        Some(Err(_)) => {}
-        None => {
-            info!("Not ready yet")
-        }
-    }
 }
 
 pub fn txt_viewer_scroll_viewer(
