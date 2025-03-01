@@ -181,7 +181,7 @@ pub fn indicates_wait_for_user_selecting(mut title: Query<Option<&mut Text>, Wit
     });
 }
 
-// TOOD: 不在State里存title, 应当是生成到TxtBase Component再读取
+// TODO: 不在State里存title, 应当是生成到TxtBase Component再读取
 pub fn indicates_wait_for_file_preparation(
     mut title: Query<Option<&mut Text>, With<ReadUITitle>>,
     reader_state: Res<State<TxtReaderState>>,
