@@ -9,7 +9,7 @@ use crate::{
         button::normal_button::NormalButton,
         viewer::txt::{create_txt_viewer, Paragraph, ParagraphRecv, RawTxt, TxtBase},
     },
-    resources::PageState,
+    resources::page::{PageState, TxtReaderState},
 };
 
 #[derive(Component)]
@@ -19,11 +19,6 @@ pub struct TxtReader;
 pub struct BackToRootBtn;
 
 impl NormalButton for BackToRootBtn {}
-
-#[derive(Component)]
-pub enum TxtReaderState {
-    None,
-}
 
 #[derive(Component)]
 pub struct OpenFilePickerBtn;
@@ -120,16 +115,22 @@ fn top_banner() -> impl Bundle {
     },)
 }
 
+#[derive(Component)]
+pub struct TxtUIBody;
+
 fn txt_message_body() -> impl Bundle {
-    Node {
-        display: Display::Flex,
-        align_items: AlignItems::Center,
-        justify_content: JustifyContent::Center,
-        width: Val::Percent(100.0),
-        height: Val::Percent(100.0),
-        flex_direction: FlexDirection::Column,
-        ..Default::default()
-    }
+    (
+        TxtUIBody,
+        Node {
+            display: Display::Flex,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            flex_direction: FlexDirection::Column,
+            ..Default::default()
+        },
+    )
 }
 
 fn txt_messages_with_btn(parent: &mut ChildBuilder<'_>) {
@@ -143,17 +144,24 @@ pub fn manage_text_ui(
     page_state: Res<PageState>,
     txt_ui: Query<Option<Entity>, With<TxtReader>>,
 ) {
-    if *page_state == PageState::TxtReadPage && txt_ui.is_empty() {
-        commands.spawn(txt_ui_base()).with_children(|parent| {
-            parent.spawn(top_banner()).with_children(back_root);
-            parent
-                .spawn(txt_message_body())
-                .with_children(txt_messages_with_btn);
-        });
-    } else if *page_state != PageState::TxtReadPage && !txt_ui.is_empty() {
-        txt_ui.iter().flatten().for_each(|entity| {
+    match *page_state {
+        PageState::TxtReadPage(TxtReaderState::None) => {
+            commands.spawn(txt_ui_base()).with_children(|parent| {
+                parent.spawn(top_banner()).with_children(back_root);
+                parent
+                    .spawn(txt_message_body())
+                    .with_children(txt_messages_with_btn);
+            });
+        }
+        PageState::TxtReadPage(TxtReaderState::Loading) => {}
+        PageState::TxtReadPage(TxtReaderState::Loaded) => {
+            txt_ui.iter().flatten().for_each(|entity| {
+                commands.entity(entity).despawn_recursive();
+            });
+        }
+        _ => txt_ui.iter().flatten().for_each(|entity| {
             commands.entity(entity).despawn_recursive();
-        })
+        }),
     }
 }
 
@@ -192,6 +200,7 @@ pub fn on_click_open_local_file(
                     None
                 }
             });
+            info!("Spawn RawTxtAsync");
             command.spawn(RawTxtAsync(file_handle));
         }
     }
@@ -199,16 +208,15 @@ pub fn on_click_open_local_file(
 
 pub fn handle_new_text(
     mut command: Commands,
-    mut raw_txt_tasks: Query<&mut RawTxtAsync>,
+    mut raw_txt_tasks: Query<(Entity, &mut RawTxtAsync)>,
     mut window: Query<&mut Window>,
     assets: ResMut<AssetServer>,
+    body: Query<Entity, With<TxtUIBody>>,
 ) {
     let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
-    for mut task in raw_txt_tasks.iter_mut() {
-        if task.0.is_finished() {
-            continue
-        }
+    for (ent, mut task) in raw_txt_tasks.iter_mut() {
         if let Some(Some(raw_text)) = futures::check_ready(&mut task.0) {
+            command.entity(ent).despawn_recursive();
             let title = raw_text.name.clone();
             let mut window = window.single_mut();
             window.title = title;
@@ -232,9 +240,13 @@ pub fn handle_new_text(
                 })
                 .detach();
 
-            command
-                .spawn(TxtBase::render(TxtBase))
-                .with_children(|parent| create_txt_viewer(parent, font.clone()));
+            info!("Remove Placeholder");
+            let body_entity = body.single();
+            command.entity(body_entity).with_children(|parent| {
+                parent
+                    .spawn(TxtBase::render(TxtBase))
+                    .with_children(|parent| create_txt_viewer(parent, font.clone()));
+            });
         }
     }
 }

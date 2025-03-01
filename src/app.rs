@@ -5,7 +5,7 @@ use crate::{
     camera::normal_camera,
     components::{self, button::normal_button::NormalButton},
     pages,
-    resources::{AppOptions, PageState},
+    resources::{page::PageState, AppOptions},
     setup_game_control, show_fps_overlay,
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
@@ -77,7 +77,7 @@ impl Game {
             .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(options)
             .insert_resource(WinitSettings::desktop_app())
-            .insert_resource(PageState::WelcomePage)
+            .insert_resource(PageState::welcome_page())
             .add_systems(Startup, (normal_camera, setup_game_control))
             .add_systems(Update, show_fps_overlay);
         match app_type {

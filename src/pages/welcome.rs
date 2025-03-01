@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{components::button::normal_button::NormalButton, resources::PageState};
+use crate::{components::button::normal_button::NormalButton, resources::page::PageState};
 
 #[derive(Component)]
 pub struct WelcomeUI;
@@ -130,7 +130,7 @@ pub fn on_click_txt_btn(
 ) {
     for (interaction, _) in query.iter_mut() {
         if *interaction == Interaction::Pressed {
-            *page_state = PageState::TxtReadPage;
+            *page_state = PageState::ai_chat_page();
         }
     }
 }
