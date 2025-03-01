@@ -55,6 +55,7 @@ fn default_plugins(app_type: AppType) -> PluginGroupBuilder {
             ..Default::default()
         })
         .set(AssetPlugin {
+            #[cfg(target_arch = "wasm32")]
             meta_check: bevy::asset::AssetMetaCheck::Never,
             ..Default::default()
         });
