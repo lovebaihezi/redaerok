@@ -221,7 +221,7 @@ pub fn on_click_back_to_root_btn(
 }
 // TODO: Task塞到TxtBody里, 这样就不用再手动的卸除Task
 #[derive(Component)]
-pub struct FileHandleAysnc(Task<Option<FileHandle>>);
+pub struct FileHandleAsync(Task<Option<FileHandle>>);
 
 #[derive(Component)]
 pub struct RawTxtAsync(Task<RawTxt>);
@@ -242,7 +242,7 @@ pub fn on_click_open_local_file(
                     let afd = rfd::AsyncFileDialog::new();
                     afd.add_filter("text", &["txt", "md"]).pick_file().await
                 });
-                command.spawn(FileHandleAysnc(file_handle));
+                command.spawn(FileHandleAsync(file_handle));
             }
             _ => {}
         });
@@ -250,7 +250,7 @@ pub fn on_click_open_local_file(
 
 pub fn read_file(
     mut command: Commands,
-    mut file_handles: Query<(Entity, &mut FileHandleAysnc)>,
+    mut file_handles: Query<(Entity, &mut FileHandleAsync)>,
     mut next_reader_state: ResMut<NextState<TxtReaderState>>,
 ) {
     file_handles.iter_mut().for_each(|(entity, mut task)| {
