@@ -3,6 +3,7 @@ use bevy::{
     tasks::{AsyncComputeTaskPool, Task},
     utils::futures,
 };
+use rfd::FileHandle;
 
 use crate::{
     components::{
@@ -40,8 +41,15 @@ pub fn txt_ui_base() -> impl Bundle {
     )
 }
 
+#[derive(Component)]
+pub struct ReadUITitle;
+
+#[derive(Component)]
+pub struct ReaderHint;
+
 pub fn txt_ui_message() -> impl Bundle {
     (
+        ReadUITitle,
         Text::new("Text Reader"),
         TextFont {
             font_size: 48.0,
@@ -57,6 +65,7 @@ pub fn txt_ui_message() -> impl Bundle {
 
 fn txt_ui_usage_message() -> impl Bundle {
     (
+        ReaderHint,
         Text::new("Open from local file"),
         TextFont {
             font_size: 16.0,
@@ -143,18 +152,36 @@ pub fn manage_text_ui(
     mut commands: Commands,
     page_state: Res<PageState>,
     txt_ui: Query<Option<Entity>, With<TxtReader>>,
+    mut title: Query<Option<&mut Text>, With<ReadUITitle>>,
 ) {
+    info!("Page State: {:?}", *page_state);
     match *page_state {
         PageState::TxtReadPage(TxtReaderState::None) => {
-            commands.spawn(txt_ui_base()).with_children(|parent| {
-                parent.spawn(top_banner()).with_children(back_root);
-                parent
-                    .spawn(txt_message_body())
-                    .with_children(txt_messages_with_btn);
+            if txt_ui.is_empty() {
+                commands.spawn(txt_ui_base()).with_children(|parent| {
+                    parent.spawn(top_banner()).with_children(back_root);
+                    parent
+                        .spawn(txt_message_body())
+                        .with_children(txt_messages_with_btn);
+                });
+            }
+        }
+        PageState::TxtReadPage(TxtReaderState::WaitForRFD) => {
+            title.iter_mut().flatten().for_each(|mut title| {
+                *title = "Opening RFD".into();
             });
         }
-        PageState::TxtReadPage(TxtReaderState::Loading) => {}
-        PageState::TxtReadPage(TxtReaderState::Loaded) => {
+        PageState::TxtReadPage(TxtReaderState::WaitForUserSelecting) => {
+            title.iter_mut().flatten().for_each(|mut title| {
+                *title = "Wait For User Select file".into();
+            });
+        }
+        PageState::TxtReadPage(TxtReaderState::WaitForLoadingFile(ref file_name)) => {
+            if let Some(mut title) = title.single_mut() {
+                *title = format!("Loading file: {}", &file_name).into();
+            }
+        }
+        PageState::TxtReadPage(TxtReaderState::PreDisplaying) => {
             txt_ui.iter().flatten().for_each(|entity| {
                 commands.entity(entity).despawn_recursive();
             });
@@ -177,31 +204,49 @@ pub fn on_click_back_to_root_btn(
 }
 
 #[derive(Component)]
-pub struct RawTxtAsync(Task<Option<RawTxt>>);
+pub struct FileHandleAysnc(Task<Option<FileHandle>>);
+
+#[derive(Component)]
+pub struct RawTxtAsync(Task<RawTxt>);
 
 pub fn on_click_open_local_file(
     mut query: Query<(&Interaction, &OpenFilePickerBtn)>,
     mut command: Commands,
+    mut state: ResMut<PageState>,
 ) {
     for (interaction, _) in query.iter_mut() {
         if *interaction == Interaction::Pressed {
+            *state = PageState::TxtReadPage(TxtReaderState::WaitForRFD);
             let pool = AsyncComputeTaskPool::get();
-            let file_handle: Task<Option<RawTxt>> = pool.spawn(async move {
+            let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
                 let afd = rfd::AsyncFileDialog::new();
-                if let Some(file) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
-                    let file_name = file.file_name();
-                    let file_content = file.read().await;
-                    Some(RawTxt {
-                        name: file_name,
-                        //TODO(chaibowen): the content may not encode in utf-8, should support it
-                        raw: String::from_utf8_lossy(&file_content).to_string(),
-                    })
-                } else {
-                    None
+                afd.add_filter("text", &["txt", "md"]).pick_file().await
+            });
+            command.spawn(FileHandleAysnc(file_handle));
+            *state = PageState::TxtReadPage(TxtReaderState::WaitForUserSelecting);
+        }
+    }
+}
+
+pub fn read_file(
+    mut command: Commands,
+    mut file_handles: Query<(Entity, &mut FileHandleAysnc)>,
+
+    mut state: ResMut<PageState>,
+) {
+    for (ent, mut task) in file_handles.iter_mut() {
+        if let Some(Some(handle)) = futures::check_ready(&mut task.0) {
+            *state = PageState::TxtReadPage(TxtReaderState::WaitForLoadingFile(handle.file_name()));
+            command.entity(ent).despawn_recursive();
+            let pool = AsyncComputeTaskPool::get();
+            let raw_txt: Task<RawTxt> = pool.spawn(async move {
+                let raw_txt = handle.read().await;
+                RawTxt {
+                    name: handle.file_name().to_string(),
+                    raw: String::from_utf8(raw_txt).unwrap(),
                 }
             });
-            info!("Spawn RawTxtAsync");
-            command.spawn(RawTxtAsync(file_handle));
+            command.spawn(RawTxtAsync(raw_txt));
         }
     }
 }
@@ -212,10 +257,12 @@ pub fn handle_new_text(
     mut window: Query<&mut Window>,
     assets: ResMut<AssetServer>,
     body: Query<Entity, With<TxtUIBody>>,
+    mut state: ResMut<PageState>,
 ) {
     let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
     for (ent, mut task) in raw_txt_tasks.iter_mut() {
-        if let Some(Some(raw_text)) = futures::check_ready(&mut task.0) {
+        if let Some(raw_text) = futures::check_ready(&mut task.0) {
+            *state = PageState::TxtReadPage(TxtReaderState::WaitForRFD);
             command.entity(ent).despawn_recursive();
             let title = raw_text.name.clone();
             let mut window = window.single_mut();
@@ -240,7 +287,8 @@ pub fn handle_new_text(
                 })
                 .detach();
 
-            info!("Remove Placeholder");
+            *state = PageState::TxtReadPage(TxtReaderState::PreDisplaying);
+            command.run_system_cached(manage_text_ui);
             let body_entity = body.single();
             command.entity(body_entity).with_children(|parent| {
                 parent

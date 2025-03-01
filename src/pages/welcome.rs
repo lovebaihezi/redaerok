@@ -130,7 +130,7 @@ pub fn on_click_txt_btn(
 ) {
     for (interaction, _) in query.iter_mut() {
         if *interaction == Interaction::Pressed {
-            *page_state = PageState::ai_chat_page();
+            *page_state = PageState::txt_read_page();
         }
     }
 }

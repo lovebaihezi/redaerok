@@ -94,6 +94,7 @@ impl Game {
                             pages::txt_reader::BackToRootBtn::normal_button_update,
                             pages::txt_reader::OpenFilePickerBtn::normal_button_update,
                             pages::txt_reader::on_click_back_to_root_btn,
+                            pages::txt_reader::read_file,
                             pages::txt_reader::handle_new_text,
                             pages::txt_reader::on_click_open_local_file,
                         ),

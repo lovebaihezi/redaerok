@@ -1,13 +1,17 @@
 use bevy::prelude::*;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TxtReaderState {
     None,
-    Loading,
-    Loaded,
+    WaitForRFD,
+    WaitForUserSelecting,
+    WaitForLoadingFile(String),
+    WaitForParagraphParsing,
+    PreDisplaying,
+    Displaying,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Resource)]
+#[derive(Debug, Clone, Eq, PartialEq, Resource)]
 pub enum PageState {
     WelcomePage, // Root
     TxtReadPage(TxtReaderState),
