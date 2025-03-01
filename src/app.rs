@@ -10,7 +10,7 @@ use crate::{
         self,
         txt_reader::{
             despawn_text_ui, indicates_wait_for_file_preparation,
-            indicates_wait_for_user_selecting, remove_txt_messages_for_showing_file,
+            indicates_wait_for_user_selecting,
             spawn_text_welcome_ui,
         },
         welcome::{despawn_welcome_ui, on_click_txt_btn, spawn_welcome_ui},

@@ -234,17 +234,14 @@ pub fn on_click_open_local_file(
 ) {
     interactions
         .iter()
-        .for_each(|interaction| match (interaction, reader_state.get()) {
-            (Interaction::Pressed, TxtReaderState::Welcome) => {
-                next_reader_state.set(TxtReaderState::WaitForUserSelecting);
-                let pool = AsyncComputeTaskPool::get();
-                let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
-                    let afd = rfd::AsyncFileDialog::new();
-                    afd.add_filter("text", &["txt", "md"]).pick_file().await
-                });
-                command.spawn(FileHandleAsync(file_handle));
-            }
-            _ => {}
+        .for_each(|interaction| if let (Interaction::Pressed, TxtReaderState::Welcome) = (interaction, reader_state.get()) {
+            next_reader_state.set(TxtReaderState::WaitForUserSelecting);
+            let pool = AsyncComputeTaskPool::get();
+            let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
+                let afd = rfd::AsyncFileDialog::new();
+                afd.add_filter("text", &["txt", "md"]).pick_file().await
+            });
+            command.spawn(FileHandleAsync(file_handle));
         });
 }
 
