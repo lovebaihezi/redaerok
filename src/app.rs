@@ -9,10 +9,7 @@ use crate::{
     },
     pages::{
         self,
-        txt_reader::{
-            despawn_text_ui, indicates_wait_for_file_preparation,
-            indicates_wait_for_user_selecting, spawn_text_welcome_ui,
-        },
+        txt_reader::{despawn_text_ui, indicates_wait_for_file_preparation, spawn_text_welcome_ui},
         welcome::{despawn_welcome_ui, on_click_txt_btn, spawn_welcome_ui},
     },
     resources::{
@@ -112,25 +109,15 @@ impl Game {
                     .add_systems(
                         OnTransition::<TxtReaderState> {
                             exited: TxtReaderState::Welcome,
-                            entered: TxtReaderState::WaitForUserSelecting,
-                        },
-                        indicates_wait_for_user_selecting,
-                    )
-                    // Txt Reader Page Wait for File Preparation
-                    .add_systems(
-                        OnTransition {
-                            exited: TxtReaderState::WaitForUserSelecting,
-                            entered: TxtReaderState::WaitForLoadingFile("".into()),
+                            entered: TxtReaderState::WaitForLoadingFile,
                         },
                         indicates_wait_for_file_preparation,
                     )
                     .add_systems(
                         Update,
                         (
-                            pages::txt_reader::read_file
-                                .run_if(in_state(TxtReaderState::WaitForUserSelecting)),
                             pages::txt_reader::handle_new_text
-                                .run_if(in_state(TxtReaderState::WaitForLoadingFile("".into()))),
+                                .run_if(in_state(TxtReaderState::WaitForLoadingFile)),
                             pages::txt_reader::add_pagegraph
                                 .run_if(in_state(TxtReaderState::PreDisplaying)),
                             (

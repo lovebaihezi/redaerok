@@ -3,7 +3,6 @@ use bevy::{
     tasks::{block_on, poll_once, AsyncComputeTaskPool, Task},
     utils::info,
 };
-use rfd::FileHandle;
 
 use crate::{
     components::{
@@ -175,25 +174,11 @@ pub fn despawn_text_ui(mut commands: Commands, txt_ui: Query<Entity, With<TxtRea
     }
 }
 
-pub fn indicates_wait_for_user_selecting(mut title: Query<Option<&mut Text>, With<ReadUITitle>>) {
-    title.iter_mut().flatten().for_each(|mut title| {
-        *title = "Waiting for User Selection".into();
-    });
-}
-
 // TODO: 不在State里存title, 应当是生成到TxtBase Component再读取
-pub fn indicates_wait_for_file_preparation(
-    mut title: Query<Option<&mut Text>, With<ReadUITitle>>,
-    reader_state: Res<State<TxtReaderState>>,
-) {
-    match reader_state.get() {
-        TxtReaderState::WaitForLoadingFile(ref file_name) => {
-            title.iter_mut().flatten().for_each(|mut title| {
-                *title = format!("Loading file: {}", &file_name).into();
-            });
-        }
-        _ => unreachable!(),
-    }
+pub fn indicates_wait_for_file_preparation(mut title: Query<Option<&mut Text>, With<ReadUITitle>>) {
+    title.iter_mut().flatten().for_each(|mut title| {
+        *title = format!("Loading file").into();
+    });
 }
 
 pub fn remove_txt_messages_for_showing_file(
@@ -221,11 +206,9 @@ pub fn on_click_back_to_root_btn(
     }
 }
 // TODO: Task塞到TxtBody里, 这样就不用再手动的卸除Task
-#[derive(Component)]
-pub struct FileHandleAsync(Task<Option<FileHandle>>);
 
 #[derive(Component)]
-pub struct RawTxtAsync(Task<RawTxt>);
+pub struct RawTxtAsync(Task<Option<RawTxt>>);
 
 pub fn on_click_open_local_file(
     interactions: Query<&Interaction, (Changed<Interaction>, With<OpenFilePickerBtn>)>,
@@ -235,39 +218,24 @@ pub fn on_click_open_local_file(
 ) {
     interactions.iter().for_each(|interaction| {
         if let (Interaction::Pressed, TxtReaderState::Welcome) = (interaction, reader_state.get()) {
-            next_reader_state.set(TxtReaderState::WaitForUserSelecting);
+            next_reader_state.set(TxtReaderState::WaitForLoadingFile);
             let pool = AsyncComputeTaskPool::get();
-            let file_handle: Task<Option<FileHandle>> = pool.spawn(async move {
+            let file_handle: Task<Option<_>> = pool.spawn(async move {
                 let afd = rfd::AsyncFileDialog::new();
-                afd.add_filter("text", &["txt", "md"]).pick_file().await
-            });
-            command.spawn(FileHandleAsync(file_handle));
-        }
-    });
-}
-
-pub fn read_file(
-    mut command: Commands,
-    mut file_handles: Query<(Entity, &mut FileHandleAsync)>,
-    mut next_reader_state: ResMut<NextState<TxtReaderState>>,
-) {
-    file_handles.iter_mut().for_each(|(entity, mut task)| {
-        if let Some(Some(handle)) = block_on(poll_once(&mut task.0)) {
-            info!("Got handle");
-            command.entity(entity).despawn();
-            next_reader_state.set(TxtReaderState::WaitForLoadingFile(handle.file_name()));
-            let pool = AsyncComputeTaskPool::get();
-            let raw_txt: Task<RawTxt> = pool.spawn(async move {
-                let raw_txt = handle.read().await;
-                info!("File read successfully");
-                RawTxt {
-                    name: handle.file_name().to_string(),
-                    raw: String::from_utf8(raw_txt).unwrap(),
+                if let Some(handle) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
+                    let raw_txt = handle.read().await;
+                    info!("File read successfully");
+                    Some(RawTxt {
+                        name: handle.file_name().to_string(),
+                        raw: String::from_utf8(raw_txt).unwrap(),
+                    })
+                } else {
+                    None
                 }
             });
-            command.spawn(RawTxtAsync(raw_txt));
+            command.spawn(RawTxtAsync(file_handle));
         }
-    })
+    });
 }
 
 pub fn handle_new_text(
@@ -280,7 +248,7 @@ pub fn handle_new_text(
 ) {
     let font: Handle<Font> = assets.load("fonts/SourceHanSerifCN-VF.ttf");
     raw_txt_tasks.iter_mut().for_each(|(entity, mut task)| {
-        if let Some(raw_text) = block_on(poll_once(&mut task.0)) {
+        if let Some(Some(raw_text)) = block_on(poll_once(&mut task.0)) {
             command.entity(entity).despawn_recursive();
             let (sender, receiver) = flume::unbounded::<Paragraph>();
             command.insert_resource(ParagraphRecv(receiver));
