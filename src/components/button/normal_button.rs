@@ -1,77 +1,79 @@
-use bevy::{color::palettes::basic::*, prelude::*};
+use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
 
-const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
-
-pub trait NormalButton
-where
-    Self: Component + Sized,
-{
-    fn outer_node(
-        self,
-    ) -> (
-        Button,
-        Self,
-        Node,
-        BorderColor,
-        BorderRadius,
-        BackgroundColor,
-    ) {
+pub trait NormalButton: Component + Sized {
+    fn spawn_btn(self) -> impl Bundle {
         (
             Button,
             self,
             Node {
-                width: Val::Px(128.0),
+                display: Display::Flex,
+                width: Val::Auto,
                 height: Val::Auto,
                 padding: UiRect::all(Val::Px(4.0)),
                 border: UiRect::all(Val::Px(2.0)),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
                 ..default()
             },
             BorderColor(Color::BLACK),
             BorderRadius::MAX,
-            BackgroundColor(NORMAL_BUTTON),
+            BackgroundColor(Color::WHITE),
         )
     }
+}
 
-    fn on_press(&mut self) {}
-
-    fn on_hover(&mut self) {}
-
-    fn none(&mut self) {}
-
-    #[allow(clippy::type_complexity)]
-    fn fixed_update(
-        mut interaction_query: Query<
-            (
-                &Interaction,
-                &mut BackgroundColor,
-                &mut BorderColor,
-                &mut Self,
-            ),
-            (Changed<Interaction>, With<Button>, With<Self>),
-        >,
-    ) {
-        for (interaction, mut color, mut border_color, mut component) in &mut interaction_query {
+#[allow(clippy::type_complexity)]
+pub fn normal_button_update(
+    mut command: Commands,
+    mut interaction_query: Query<
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &Children,
+        ),
+        (Changed<Interaction>, With<Button>),
+    >,
+    window: Single<Entity, With<Window>>,
+    mut text_color_query: Query<&mut TextColor>,
+) {
+    interaction_query.iter_mut().for_each(
+        |(interaction, mut bg_color, mut border_color, children)| {
+            let pointer: CursorIcon = SystemCursorIcon::Pointer.into();
+            let normal: CursorIcon = SystemCursorIcon::Default.into();
             match *interaction {
                 Interaction::Pressed => {
-                    component.on_press();
-                    *color = PRESSED_BUTTON.into();
-                    border_color.0 = RED.into();
+                    command
+                        .entity(*window)
+                        .remove::<CursorIcon>()
+                        .insert(normal);
+                    *bg_color = Color::BLACK.into();
+                    border_color.0 = Color::WHITE;
+                    if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
+                        **text_color = Color::WHITE;
+                    }
                 }
                 Interaction::Hovered => {
-                    component.on_hover();
-                    *color = HOVERED_BUTTON.into();
-                    border_color.0 = Color::WHITE;
+                    command
+                        .entity(*window)
+                        .remove::<CursorIcon>()
+                        .insert(pointer);
+                    *bg_color = Color::WHITE.into();
+                    border_color.0 = Color::BLACK;
+                    if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
+                        **text_color = Color::BLACK;
+                    }
                 }
                 Interaction::None => {
-                    component.none();
-                    *color = NORMAL_BUTTON.into();
-                    border_color.0 = Color::BLACK;
+                    command
+                        .entity(*window)
+                        .remove::<CursorIcon>()
+                        .insert(normal);
+                    *bg_color = Color::BLACK.into();
+                    border_color.0 = Color::WHITE;
+                    if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
+                        **text_color = Color::WHITE;
+                    }
                 }
             }
-        }
-    }
+        },
+    )
 }
