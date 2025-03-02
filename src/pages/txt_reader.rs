@@ -13,6 +13,33 @@ use crate::{
     states::page::{PageState, TxtReaderState},
 };
 
+pub struct TxtReaderPlugin;
+
+impl Plugin for TxtReaderPlugin {
+    fn build(&self, app: &mut App) {
+        // Txt Read Page
+        app.add_systems(OnExit(PageState::TxtReadPage), despawn_text_ui)
+            // Txt Reader Page Welcome
+            .add_systems(OnEnter(TxtReaderState::Welcome), spawn_text_welcome_ui)
+            .add_systems(
+                OnTransition::<TxtReaderState> {
+                    exited: TxtReaderState::Welcome,
+                    entered: TxtReaderState::WaitForLoadingFile,
+                },
+                indicates_wait_for_file_preparation,
+            )
+            .add_systems(
+                Update,
+                (
+                    handle_new_text.run_if(in_state(TxtReaderState::WaitForLoadingFile)),
+                    add_pagegraph.run_if(in_state(TxtReaderState::PreDisplaying)),
+                    (on_click_back_to_root_btn, on_click_open_local_file)
+                        .run_if(in_state(PageState::TxtReadPage)),
+                ),
+            );
+    }
+}
+
 #[derive(Component)]
 pub struct TxtReader;
 
@@ -170,7 +197,6 @@ pub fn despawn_text_ui(mut commands: Commands, txt_ui: Query<Entity, With<TxtRea
     }
 }
 
-// TODO: 不在State里存title, 应当是生成到TxtBase Component再读取
 pub fn indicates_wait_for_file_preparation(mut title: Query<Option<&mut Text>, With<ReadUITitle>>) {
     title.iter_mut().flatten().for_each(|mut title| {
         *title = "Loading file".to_string().into();
@@ -201,7 +227,6 @@ pub fn on_click_back_to_root_btn(
         }
     }
 }
-// TODO: Task塞到TxtBody里, 这样就不用再手动的卸除Task
 
 #[derive(Component)]
 pub struct RawTxtAsync(Task<Option<RawTxt>>);
