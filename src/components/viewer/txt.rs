@@ -8,8 +8,6 @@ use bevy::{
 
 use flume::Receiver;
 
-use crate::components::button::normal_button::NormalButton;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Paragraph {
     pub index: usize,
@@ -57,7 +55,7 @@ pub struct RawTxt {
 #[derive(Resource)]
 pub struct ParagraphRecv(pub Receiver<Paragraph>);
 
-pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
+pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>, title: String) {
     parent.spawn((
         TxtTitle,
         Node {
@@ -71,7 +69,7 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
             ..Default::default()
         },
         BorderColor::from(Color::WHITE),
-        Text::new("Untitled"),
+        Text::new(title),
         TextFont {
             font_size: 24.0,
             font,
