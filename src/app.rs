@@ -3,15 +3,8 @@ use std::time::Duration;
 
 use crate::{
     camera::normal_camera,
-    components::{
-        button::normal_button::normal_button_update,
-        viewer::txt::{txt_viewer_cursor, txt_viewer_scroll_viewer},
-    },
-    pages::{
-        self,
-        txt_reader::{despawn_text_ui, indicates_wait_for_file_preparation, spawn_text_welcome_ui},
-        welcome::{despawn_welcome_ui, on_click_txt_btn, spawn_welcome_ui},
-    },
+    components::ComponentPlugin,
+    pages::{explorer::ExplorerPlugin, txt_reader::TxtReaderPlugin, welcome::WelcomePlugin},
     resources::AppOptions,
     setup_game_control, show_fps_overlay,
     states::page::{PageState, TxtReaderState},
@@ -88,59 +81,21 @@ impl Game {
         let options = AppOptions::parse();
         let mut game = Game { app: App::new() };
         game.app
-            .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(options)
+            .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(WinitSettings::desktop_app())
             .init_state::<PageState>()
             .add_sub_state::<TxtReaderState>()
             .add_systems(Startup, (normal_camera, setup_game_control))
-            .add_systems(Update, show_fps_overlay);
+            .add_systems(Update, show_fps_overlay)
+            .add_plugins((
+                WelcomePlugin,
+                TxtReaderPlugin,
+                ExplorerPlugin,
+                ComponentPlugin,
+            ));
         match app_type {
-            AppType::Normal => {
-                game.app
-                    // Welcome Page
-                    .add_systems(OnEnter(PageState::WelcomePage), spawn_welcome_ui)
-                    .add_systems(OnExit(PageState::WelcomePage), despawn_welcome_ui)
-                    // Interaction System for Welcome Page
-                    .add_systems(
-                        Update,
-                        (on_click_txt_btn,).run_if(in_state(PageState::WelcomePage)),
-                    )
-                    // Txt Read Page
-                    .add_systems(OnExit(PageState::TxtReadPage), despawn_text_ui)
-                    // Txt Reader Page Welcome
-                    .add_systems(OnEnter(TxtReaderState::Welcome), spawn_text_welcome_ui)
-                    .add_systems(
-                        OnTransition::<TxtReaderState> {
-                            exited: TxtReaderState::Welcome,
-                            entered: TxtReaderState::WaitForLoadingFile,
-                        },
-                        indicates_wait_for_file_preparation,
-                    )
-                    .add_systems(
-                        Update,
-                        (
-                            pages::txt_reader::handle_new_text
-                                .run_if(in_state(TxtReaderState::WaitForLoadingFile)),
-                            pages::txt_reader::add_pagegraph
-                                .run_if(in_state(TxtReaderState::PreDisplaying)),
-                            (
-                                pages::txt_reader::on_click_back_to_root_btn,
-                                pages::txt_reader::on_click_open_local_file,
-                            )
-                                .run_if(in_state(PageState::TxtReadPage)),
-                        ),
-                    )
-                    // Txt Reader Page Wait for File Preparation
-                    .add_systems(
-                        Update,
-                        (
-                            txt_viewer_scroll_viewer,
-                            normal_button_update,
-                            txt_viewer_cursor,
-                        ),
-                    );
-            }
+            AppType::Normal => {}
             AppType::RenderToImageTesting => {
                 game.app
                     .add_systems(Startup, render_to_image_setup)

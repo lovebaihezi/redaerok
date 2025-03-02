@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::{components::button::normal_button::NormalButton, states::page::PageState};
 
+pub struct WelcomePlugin;
+
 #[derive(Component)]
 pub struct WelcomeUI;
 
@@ -138,5 +140,17 @@ pub fn on_click_txt_btn(
         if *interaction == Interaction::Pressed {
             next_page_state.set(PageState::TxtReadPage);
         }
+    }
+}
+
+impl Plugin for WelcomePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(PageState::WelcomePage), spawn_welcome_ui)
+            .add_systems(OnExit(PageState::WelcomePage), despawn_welcome_ui)
+            // Interaction System for Welcome Page
+            .add_systems(
+                Update,
+                (on_click_txt_btn,).run_if(in_state(PageState::WelcomePage)),
+            );
     }
 }

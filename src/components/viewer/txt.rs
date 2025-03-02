@@ -102,19 +102,28 @@ pub fn txt_viewer_cursor(
     hover_map: Res<HoverMap>,
     mut command: Commands,
     window: Single<Entity, With<Window>>,
-    text_query: Query<(&Parent, &Text), Without<Button>>,
-    parent_query: Query<Entity, Without<Button>>,
+    text_query: Query<&Text, Without<Button>>,
+    parent_not_button: Query<&Parent, Without<Button>>,
 ) {
     hover_map.iter().for_each(|(_pointer, pointer_map)| {
         pointer_map.iter().for_each(|(entity, _hit)| {
-            if let Ok((parent, _)) = text_query.get(*entity) {
-                if parent_query.contains(parent.get()) {
+            // If Parent is not a button, then if it is a text component, set cursor icon to text, else set cursor icon to default
+            if parent_not_button.get(*entity).is_ok() {
+                if text_query.contains(*entity) {
                     let text_icon: CursorIcon = SystemCursorIcon::Text.into();
                     command
                         .entity(*window)
                         .remove::<CursorIcon>()
                         .insert(text_icon);
+                } else {
+                    let default_cursor: CursorIcon = SystemCursorIcon::Default.into();
+                    command
+                        .entity(*window)
+                        .remove::<CursorIcon>()
+                        .insert(default_cursor);
                 }
+            } else {
+                command.entity(*window).remove::<CursorIcon>();
             }
         })
     })
