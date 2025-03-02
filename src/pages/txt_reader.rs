@@ -9,7 +9,6 @@ use crate::{
         button::normal_button::NormalButton,
         viewer::txt::{
             create_txt_viewer, Paragraph, ParagraphRecv, RawTxt, TxtBase, TxtBody, TxtPara,
-            TxtTitle,
         },
     },
     resources::page::{PageState, TxtReaderState},
