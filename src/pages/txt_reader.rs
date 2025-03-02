@@ -257,7 +257,6 @@ pub fn handle_new_text(
             next_reader_state.set(TxtReaderState::PreDisplaying);
             let title = raw_text.name.clone();
             let mut window = window.single_mut();
-            window.title = title;
 
             command.insert_resource(raw_text.clone());
             let task_pool = AsyncComputeTaskPool::get();
@@ -279,8 +278,9 @@ pub fn handle_new_text(
             command.entity(body_entity).with_children(|parent| {
                 parent
                     .spawn(TxtBase::render(TxtBase))
-                    .with_children(|parent| create_txt_viewer(parent, font.clone()));
+                    .with_children(|parent| create_txt_viewer(parent, font.clone(), title.clone()));
             });
+            window.title = title;
         }
     })
 }

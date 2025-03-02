@@ -55,7 +55,7 @@ pub struct RawTxt {
 #[derive(Resource)]
 pub struct ParagraphRecv(pub Receiver<Paragraph>);
 
-pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
+pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>, title: String) {
     parent.spawn((
         TxtTitle,
         Node {
@@ -69,7 +69,7 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
             ..Default::default()
         },
         BorderColor::from(Color::WHITE),
-        Text::new("Untitled"),
+        Text::new(title),
         TextFont {
             font_size: 24.0,
             font,
@@ -99,25 +99,25 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>) {
 }
 
 pub fn txt_viewer_cursor(
-    interactions: Query<&Interaction, (Changed<Interaction>, With<Text>)>,
+    hover_map: Res<HoverMap>,
     mut command: Commands,
     window: Single<Entity, With<Window>>,
+    text_query: Query<(&Parent, &Text), Without<Button>>,
+    parent_query: Query<Entity, Without<Button>>,
 ) {
-    interactions
-        .iter()
-        .for_each(|interaction| match interaction {
-            Interaction::Hovered => {
-                let edit: CursorIcon = SystemCursorIcon::Text.into();
-                command.entity(*window).remove::<CursorIcon>().insert(edit);
+    hover_map.iter().for_each(|(_pointer, pointer_map)| {
+        pointer_map.iter().for_each(|(entity, _hit)| {
+            if let Ok((parent, _)) = text_query.get(*entity) {
+                if parent_query.contains(parent.get()) {
+                    let text_icon: CursorIcon = SystemCursorIcon::Text.into();
+                    command
+                        .entity(*window)
+                        .remove::<CursorIcon>()
+                        .insert(text_icon);
+                }
             }
-            _ => {
-                let normal: CursorIcon = SystemCursorIcon::Default.into();
-                command
-                    .entity(*window)
-                    .remove::<CursorIcon>()
-                    .insert(normal);
-            }
-        });
+        })
+    })
 }
 
 pub fn txt_viewer_scroll_viewer(
