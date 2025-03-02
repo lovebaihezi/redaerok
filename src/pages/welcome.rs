@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{components::button::normal_button::NormalButton, resources::page::PageState};
+use crate::{components::button::normal_button::NormalButton, states::page::PageState};
 
 #[derive(Component)]
 pub struct WelcomeUI;
@@ -98,7 +98,6 @@ pub fn spawn_welcome_ui(
     welcome_ui: Query<Option<Entity>, With<WelcomeUI>>,
 ) {
     if welcome_ui.is_empty() {
-        info!("Drawing Welcome UI");
         commands.spawn(welcome_ui_base()).with_children(|parent| {
             parent.spawn(welcome_ui_message());
             parent
@@ -125,7 +124,6 @@ pub fn despawn_welcome_ui(
     welcome_ui: Query<Option<Entity>, With<WelcomeUI>>,
 ) {
     if !welcome_ui.is_empty() {
-        info!("Clean up Welcome UI");
         welcome_ui.iter().flatten().for_each(|ui_entity| {
             commands.entity(ui_entity).despawn_recursive();
         });
@@ -138,7 +136,7 @@ pub fn on_click_txt_btn(
 ) {
     for (interaction, _) in query.iter_mut() {
         if *interaction == Interaction::Pressed {
-            next_page_state.set(PageState::txt_read_page());
+            next_page_state.set(PageState::TxtReadPage);
         }
     }
 }

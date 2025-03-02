@@ -12,11 +12,9 @@ use crate::{
         txt_reader::{despawn_text_ui, indicates_wait_for_file_preparation, spawn_text_welcome_ui},
         welcome::{despawn_welcome_ui, on_click_txt_btn, spawn_welcome_ui},
     },
-    resources::{
-        page::{PageState, TxtReaderState},
-        AppOptions,
-    },
+    resources::AppOptions,
     setup_game_control, show_fps_overlay,
+    states::page::{PageState, TxtReaderState},
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 

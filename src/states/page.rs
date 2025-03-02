@@ -15,17 +15,4 @@ pub enum PageState {
     #[default]
     WelcomePage, // Root
     TxtReadPage,
-    AIChatPage,
-}
-
-impl PageState {
-    pub fn welcome_page() -> Self {
-        Self::WelcomePage
-    }
-    pub fn txt_read_page() -> Self {
-        Self::TxtReadPage
-    }
-    pub fn ai_chat_page() -> Self {
-        Self::AIChatPage
-    }
 }
