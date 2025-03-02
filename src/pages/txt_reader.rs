@@ -1,7 +1,6 @@
 use bevy::{
     prelude::*,
     tasks::{block_on, poll_once, AsyncComputeTaskPool, Task},
-    utils::info,
 };
 
 use crate::{
@@ -47,7 +46,6 @@ pub struct ReadUITitle;
 pub struct ReaderHint;
 
 pub fn txt_ui_message() -> impl Bundle {
-    info!("Rendered Once");
     (
         ReadUITitle,
         Text::new("Text Reader"),
@@ -155,7 +153,6 @@ pub fn spawn_text_welcome_ui(
     txt_ui: Query<Option<Entity>, With<TxtReader>>,
 ) {
     if txt_ui.is_empty() {
-        info!("Creating text Welcome UI");
         commands.spawn(txt_ui_base()).with_children(|parent| {
             parent.spawn(top_banner()).with_children(back_root);
             parent
@@ -167,7 +164,6 @@ pub fn spawn_text_welcome_ui(
 
 pub fn despawn_text_ui(mut commands: Commands, txt_ui: Query<Entity, With<TxtReader>>) {
     if !txt_ui.is_empty() {
-        info("Clean Up Txt UI");
         for entity in txt_ui.iter() {
             commands.entity(entity).despawn_recursive();
         }
@@ -224,7 +220,6 @@ pub fn on_click_open_local_file(
                 let afd = rfd::AsyncFileDialog::new();
                 if let Some(handle) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
                     let raw_txt = handle.read().await;
-                    info!("File read successfully");
                     Some(RawTxt {
                         name: handle.file_name().to_string(),
                         raw: String::from_utf8(raw_txt).unwrap(),
@@ -291,11 +286,13 @@ pub fn add_pagegraph(
     raw_text: Res<RawTxt>,
     body_query: Query<Entity, With<TxtBody>>,
     asset_server: ResMut<AssetServer>,
+    mut next_reader_state: ResMut<NextState<TxtReaderState>>,
 ) {
     let font = asset_server.load("fonts/SourceHanSerifCN-VF.ttf");
     let channel = channel.as_mut();
     let rec = channel.0.clone();
     if rec.is_empty() {
+        next_reader_state.set(TxtReaderState::Displaying);
         return;
     }
     let mut paragraph_async = rec.recv_async();
@@ -328,8 +325,6 @@ pub fn add_pagegraph(
             }
         }
         Some(Err(_)) => {}
-        None => {
-            info!("Not ready yet")
-        }
+        None => {}
     }
 }
