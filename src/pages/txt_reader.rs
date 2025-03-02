@@ -11,7 +11,7 @@ use crate::{
             create_txt_viewer, Paragraph, ParagraphRecv, RawTxt, TxtBase, TxtBody, TxtPara,
         },
     },
-    resources::page::{PageState, TxtReaderState},
+    states::page::{PageState, TxtReaderState},
 };
 
 #[derive(Component)]

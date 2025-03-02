@@ -5,6 +5,7 @@ mod cool18bbs4;
 mod game_control;
 mod pages;
 pub mod resources;
+mod states;
 pub mod test_functions;
 
 pub use camera::normal_camera;

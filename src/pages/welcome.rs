@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{components::button::normal_button::NormalButton, resources::page::PageState};
+use crate::{components::button::normal_button::NormalButton, states::page::PageState};
 
 #[derive(Component)]
 pub struct WelcomeUI;
