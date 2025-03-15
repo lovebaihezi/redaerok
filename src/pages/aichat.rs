@@ -30,23 +30,26 @@ pub fn init_ai_chat_page(mut commands: Commands, assets: ResMut<AssetServer>) {
     let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
     commands
         .spawn(ai_chat_input_base())
-        .with_child((
-            Node {
-                width: Val::Px(128.0),
-                ..Default::default()
-            },
-            BackgroundColor::from(Color::WHITE),
-            BorderColor::from(Color::BLACK),
-        ))
-        .with_child(normal::bundle(
-            AIChatRootInput,
-            TextFont {
-                font,
-                font_size: 20.0,
-                ..Default::default()
-            },
-            TextLayout::new(JustifyText::Left, LineBreak::WordOrCharacter),
-        ));
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    Node {
+                        width: Val::Px(256.0),
+                        ..Default::default()
+                    },
+                    BackgroundColor::from(Color::WHITE),
+                    BorderColor::from(Color::BLACK),
+                ))
+                .with_child(normal::bundle(
+                    AIChatRootInput,
+                    TextFont {
+                        font,
+                        font_size: 20.0,
+                        ..Default::default()
+                    },
+                    TextLayout::new(JustifyText::Left, LineBreak::WordOrCharacter),
+                ));
+        });
 }
 
 pub fn remove_aichat_page(mut commands: Commands, query: Query<Entity, With<AIChatRoot>>) {
