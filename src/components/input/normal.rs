@@ -1,19 +1,34 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct NormalInput {
-    current_value: String,
+pub struct Input;
+
+#[derive(Component)]
+pub enum InputFocus {
+    Normal,
+    Disabled,
+    Hidden,
+    Focused,
 }
 
-impl NormalInput {
-    pub fn render() -> impl Bundle {
-        ()
-    }
-
-    pub fn cur_value(&self) -> &str {
-        &self.current_value
-    }
+pub fn bundle(extra_marker: impl Component, font: TextFont, layout: TextLayout) -> impl Bundle {
+    (
+        extra_marker,
+        Input,
+        InputFocus::Normal,
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            ..Default::default()
+        },
+        Text::new(""),
+        font,
+        layout,
+    )
 }
+
+// Update input bundle focus states
+pub fn focus_input() {}
 
 pub fn update_on_keyboard() {}
 
