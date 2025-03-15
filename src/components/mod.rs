@@ -13,8 +13,7 @@ impl Plugin for ComponentPlugin {
             Update,
             (
                 txt_viewer_scroll_viewer,
-                normal_button_update,
-                txt_viewer_cursor,
+                (normal_button_update, txt_viewer_cursor).chain(),
             ),
         );
     }
