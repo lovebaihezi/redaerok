@@ -15,4 +15,5 @@ pub enum PageState {
     #[default]
     WelcomePage, // Root
     TxtReadPage,
+    AIChatPage,
 }

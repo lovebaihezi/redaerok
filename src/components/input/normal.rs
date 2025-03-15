@@ -15,7 +15,6 @@ pub fn bundle(extra_marker: impl Component, font: TextFont, layout: TextLayout) 
     (
         extra_marker,
         Input,
-        InputFocus::Normal,
         Node {
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
@@ -28,7 +27,21 @@ pub fn bundle(extra_marker: impl Component, font: TextFont, layout: TextLayout) 
 }
 
 // Update input bundle focus states
-pub fn focus_input() {}
+pub fn focus_input(texts: Query<(Entity, &Interaction), (Changed<Interaction>, With<Input>)>) {
+    for (ent, interaction) in texts.iter() {
+        match interaction {
+            Interaction::Hovered => {
+                // Handle hover state
+            }
+            Interaction::Pressed => {
+                info!("Input Got Focused: {:?}", ent);
+            }
+            Interaction::None => {
+                // Handle none state
+            }
+        }
+    }
+}
 
 pub fn update_on_keyboard() {}
 

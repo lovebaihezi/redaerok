@@ -143,6 +143,17 @@ pub fn on_click_txt_btn(
     }
 }
 
+pub fn on_click_ai_chat_btn(
+    mut next_page_state: ResMut<NextState<PageState>>,
+    mut query: Query<(&Interaction, &JumpAIChatPageBtn)>,
+) {
+    for (interaction, _) in query.iter_mut() {
+        if *interaction == Interaction::Pressed {
+            next_page_state.set(PageState::AIChatPage);
+        }
+    }
+}
+
 impl Plugin for WelcomePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(PageState::WelcomePage), spawn_welcome_ui)
@@ -150,7 +161,7 @@ impl Plugin for WelcomePlugin {
             // Interaction System for Welcome Page
             .add_systems(
                 Update,
-                (on_click_txt_btn,).run_if(in_state(PageState::WelcomePage)),
+                (on_click_txt_btn, on_click_ai_chat_btn).run_if(in_state(PageState::WelcomePage)),
             );
     }
 }

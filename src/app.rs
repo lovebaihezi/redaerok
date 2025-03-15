@@ -4,7 +4,10 @@ use std::time::Duration;
 use crate::{
     camera::normal_camera,
     components::ComponentPlugin,
-    pages::{explorer::ExplorerPlugin, txt_reader::TxtReaderPlugin, welcome::WelcomePlugin},
+    pages::{
+        aichat::AIChatPlugin, explorer::ExplorerPlugin, txt_reader::TxtReaderPlugin,
+        welcome::WelcomePlugin,
+    },
     resources::AppOptions,
     setup_game_control, show_fps_overlay,
     states::page::{PageState, TxtReaderState},
@@ -93,6 +96,7 @@ impl Game {
                 TxtReaderPlugin,
                 ExplorerPlugin,
                 ComponentPlugin,
+                AIChatPlugin,
             ));
         match app_type {
             AppType::Normal => {}

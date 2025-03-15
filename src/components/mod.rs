@@ -10,13 +10,6 @@ pub struct ComponentPlugin;
 
 impl Plugin for ComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (
-                txt_viewer_scroll_viewer,
-                normal_button_update,
-                txt_viewer_cursor,
-            ),
-        );
+        app.add_systems(Update, (txt_viewer_scroll_viewer, normal_button_update));
     }
 }
