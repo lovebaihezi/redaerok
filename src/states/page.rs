@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(SubStates, Debug, Clone, Default, Hash, PartialEq, Eq)]
-#[source(PageState = PageState::TxtReadPage)]
+#[source(Page = Page::TxtViewer)]
 pub enum TxtReaderState {
     #[default]
     Welcome,
@@ -11,9 +11,9 @@ pub enum TxtReaderState {
 }
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
-pub enum PageState {
+pub enum Page {
     #[default]
-    WelcomePage, // Root
-    TxtReadPage,
-    AIChatPage,
+    Welcome, // Root
+    TxtViewer,
+    AIChat,
 }

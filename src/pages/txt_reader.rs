@@ -10,7 +10,7 @@ use crate::{
             create_txt_viewer, Paragraph, ParagraphRecv, RawTxt, TxtBase, TxtBody, TxtPara,
         },
     },
-    states::page::{PageState, TxtReaderState},
+    states::page::{Page, TxtReaderState},
 };
 
 pub struct TxtReaderPlugin;
@@ -18,7 +18,7 @@ pub struct TxtReaderPlugin;
 impl Plugin for TxtReaderPlugin {
     fn build(&self, app: &mut App) {
         // Txt Read Page
-        app.add_systems(OnExit(PageState::TxtReadPage), despawn_text_ui)
+        app.add_systems(OnExit(Page::TxtViewer), despawn_text_ui)
             // Txt Reader Page Welcome
             .add_systems(OnEnter(TxtReaderState::Welcome), spawn_text_welcome_ui)
             .add_systems(
@@ -34,7 +34,7 @@ impl Plugin for TxtReaderPlugin {
                     handle_new_text.run_if(in_state(TxtReaderState::WaitForLoadingFile)),
                     add_pagegraph.run_if(in_state(TxtReaderState::PreDisplaying)),
                     (on_click_back_to_root_btn, on_click_open_local_file)
-                        .run_if(in_state(PageState::TxtReadPage)),
+                        .run_if(in_state(Page::TxtViewer)),
                 ),
             );
     }
@@ -218,12 +218,12 @@ pub fn remove_txt_messages_for_showing_file(
 }
 
 pub fn on_click_back_to_root_btn(
-    mut next_page_state: ResMut<NextState<PageState>>,
+    mut next_page_state: ResMut<NextState<Page>>,
     mut query: Query<&Interaction, (With<BackToRootBtn>, Changed<Interaction>)>,
 ) {
     for interaction in query.iter_mut() {
         if *interaction == Interaction::Pressed {
-            next_page_state.set(PageState::WelcomePage);
+            next_page_state.set(Page::Welcome);
         }
     }
 }

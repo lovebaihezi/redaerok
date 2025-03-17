@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{components::input::normal, states::page::PageState};
+use crate::{components::input::normal, states::page::Page};
 
 pub struct AIChatPlugin;
 
@@ -60,7 +60,7 @@ pub fn remove_aichat_page(mut commands: Commands, query: Query<Entity, With<AICh
 
 impl Plugin for AIChatPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(PageState::AIChatPage), init_ai_chat_page)
-            .add_systems(OnExit(PageState::AIChatPage), remove_aichat_page);
+        app.add_systems(OnEnter(Page::AIChat), init_ai_chat_page)
+            .add_systems(OnExit(Page::AIChat), remove_aichat_page);
     }
 }
