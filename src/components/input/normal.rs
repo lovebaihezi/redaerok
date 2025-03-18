@@ -1,43 +1,61 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
 
 #[derive(Component)]
 pub struct Input;
 
-#[derive(Component)]
+pub fn normal_input() -> impl Bundle {
+    (
+        Input,
+        Node {
+            width: Val::Px(256.0),
+            height: Val::Px(32.0),
+            ..Default::default()
+        },
+        BackgroundColor::from(Color::WHITE),
+        BorderColor::from(Color::BLACK),
+        TextColor::BLACK,
+        Text::new("Content"),
+        TextLayout::new(JustifyText::Left, LineBreak::WordOrCharacter),
+        TextFont {
+            font_size: 32.0,
+            ..Default::default()
+        },
+    )
+}
+
+#[derive(Component, Default)]
 pub enum InputFocus {
+    #[default]
     Normal,
     Disabled,
     Hidden,
     Focused,
 }
 
-pub fn bundle(extra_marker: impl Component, font: TextFont, layout: TextLayout) -> impl Bundle {
-    (
-        extra_marker,
-        Input,
-        Node {
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
-            ..Default::default()
-        },
-        Text::new(""),
-        font,
-        layout,
-    )
-}
-
 // Update input bundle focus states
-pub fn focus_input(texts: Query<(Entity, &Interaction), (Changed<Interaction>, With<Input>)>) {
+pub fn focus_input(
+    mut command: Commands,
+    texts: Query<(Entity, &Interaction), (Changed<Interaction>, With<Input>)>,
+    window: Single<Entity, With<Window>>,
+) {
+    let input_cursor: CursorIcon = SystemCursorIcon::Text.into();
+    let default_cursor: CursorIcon = SystemCursorIcon::Default.into();
     for (ent, interaction) in texts.iter() {
         match interaction {
             Interaction::Hovered => {
-                // Handle hover state
+                command
+                    .entity(*window)
+                    .remove::<CursorIcon>()
+                    .insert(input_cursor.clone());
             }
             Interaction::Pressed => {
-                info!("Input Got Focused: {:?}", ent);
+                info!("Pressed");
             }
             Interaction::None => {
-                // Handle none state
+                command
+                    .entity(*window)
+                    .remove::<CursorIcon>()
+                    .insert(default_cursor.clone());
             }
         }
     }
