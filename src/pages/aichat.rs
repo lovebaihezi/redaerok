@@ -33,7 +33,7 @@ pub fn init_ai_chat_page(mut commands: Commands, assets: ResMut<AssetServer>) {
     //let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
     commands
         .spawn(ai_chat_input_base())
-        .with_child((AIChatRootInput,))
+        .with_child(AIChatRootInput)
         .insert(normal_input());
 }
 
