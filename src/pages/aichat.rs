@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    components::input::normal::{self, normal_input, Input},
-    states::page::Page,
-};
+use crate::{components::input::normal::normal_input, states::page::Page};
 
 pub struct AIChatPlugin;
 
