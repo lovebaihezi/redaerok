@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{input::mouse::MouseButtonInput, prelude::*};
 
 use crate::{components::input::normal::normal_input, states::page::Page};
 
@@ -27,7 +27,7 @@ fn ai_chat_input_base() -> impl Bundle {
 }
 
 pub fn init_ai_chat_page(mut commands: Commands, assets: ResMut<AssetServer>) {
-    //let font = assets.load("fonts/SourceHanSerifCN-VF.ttf");
+    //let font = assets.load("fonts/SourceHanSerifCN-VF.ttf")featureSwitchManager;
     commands
         .spawn(ai_chat_input_base())
         .with_child(AIChatRootInput)
