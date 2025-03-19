@@ -4,10 +4,13 @@ use std::time::Duration;
 use crate::{
     camera::normal_camera,
     components::ComponentPlugin,
-    pages::{explorer::ExplorerPlugin, txt_reader::TxtReaderPlugin, welcome::WelcomePlugin},
+    pages::{
+        aichat::AIChatPlugin, explorer::ExplorerPlugin, txt_reader::TxtReaderPlugin,
+        welcome::WelcomePlugin,
+    },
     resources::AppOptions,
     setup_game_control, show_fps_overlay,
-    states::page::{PageState, TxtReaderState},
+    states::page::{Page, TxtReaderState},
     test_functions::{render_to_image_setup, CaptureFramePlugin, ImageCopyPlugin, SceneController},
 };
 
@@ -84,7 +87,7 @@ impl Game {
             .insert_resource(options)
             .add_plugins((default_plugins(app_type), fps_plugin()))
             .insert_resource(WinitSettings::desktop_app())
-            .init_state::<PageState>()
+            .init_state::<Page>()
             .add_sub_state::<TxtReaderState>()
             .add_systems(Startup, (normal_camera, setup_game_control))
             .add_systems(Update, show_fps_overlay)
@@ -93,6 +96,7 @@ impl Game {
                 TxtReaderPlugin,
                 ExplorerPlugin,
                 ComponentPlugin,
+                AIChatPlugin,
             ));
         match app_type {
             AppType::Normal => {}
