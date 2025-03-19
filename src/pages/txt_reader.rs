@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::{
     components::{
-        button::normal_button::NormalButton,
+        button::normal_button::{NormalButton, NormalButtonEvent},
         viewer::txt::{
             create_txt_viewer, Paragraph, ParagraphRecv, RawTxt, TxtBase, TxtBody, TxtPara,
         },
@@ -33,8 +33,6 @@ impl Plugin for TxtReaderPlugin {
                 (
                     handle_new_text.run_if(in_state(TxtReaderState::WaitForLoadingFile)),
                     add_pagegraph.run_if(in_state(TxtReaderState::PreDisplaying)),
-                    (on_click_back_to_root_btn, on_click_open_local_file)
-                        .run_if(in_state(PageState::TxtReadPage)),
                 ),
             );
     }
@@ -107,6 +105,7 @@ fn txt_ui_usage_message() -> impl Bundle {
 fn txt_ui_btn_open_local_file(parent: &mut ChildBuilder<'_>) {
     parent
         .spawn(OpenFilePickerBtn::spawn_btn(OpenFilePickerBtn))
+        .observe(on_click_open_local_file)
         .with_child((
             Text::new("open file picker"),
             TextColor(Color::WHITE),
@@ -124,6 +123,7 @@ fn txt_ui_btn_open_local_file(parent: &mut ChildBuilder<'_>) {
 fn back_root(parent: &mut ChildBuilder<'_>) {
     parent
         .spawn(BackToRootBtn::spawn_btn(BackToRootBtn))
+        .observe(on_click_back_to_root_btn)
         .with_child((
             Text::new("Root"),
             TextColor(Color::WHITE),
@@ -218,13 +218,11 @@ pub fn remove_txt_messages_for_showing_file(
 }
 
 pub fn on_click_back_to_root_btn(
+    e: Trigger<NormalButtonEvent>,
     mut next_page_state: ResMut<NextState<PageState>>,
-    mut query: Query<&Interaction, (With<BackToRootBtn>, Changed<Interaction>)>,
 ) {
-    for interaction in query.iter_mut() {
-        if *interaction == Interaction::Pressed {
-            next_page_state.set(PageState::WelcomePage);
-        }
+    if e.event() == &NormalButtonEvent::Clicked {
+        next_page_state.set(PageState::WelcomePage);
     }
 }
 
@@ -232,30 +230,28 @@ pub fn on_click_back_to_root_btn(
 pub struct RawTxtAsync(Task<Option<RawTxt>>);
 
 pub fn on_click_open_local_file(
-    interactions: Query<&Interaction, (Changed<Interaction>, With<OpenFilePickerBtn>)>,
+    e: Trigger<NormalButtonEvent>,
     mut command: Commands,
     reader_state: Res<State<TxtReaderState>>,
     mut next_reader_state: ResMut<NextState<TxtReaderState>>,
 ) {
-    interactions.iter().for_each(|interaction| {
-        if let (Interaction::Pressed, TxtReaderState::Welcome) = (interaction, reader_state.get()) {
-            next_reader_state.set(TxtReaderState::WaitForLoadingFile);
-            let pool = AsyncComputeTaskPool::get();
-            let file_handle: Task<Option<_>> = pool.spawn(async move {
-                let afd = rfd::AsyncFileDialog::new();
-                if let Some(handle) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
-                    let raw_txt = handle.read().await;
-                    Some(RawTxt {
-                        name: handle.file_name().to_string(),
-                        raw: String::from_utf8(raw_txt).unwrap(),
-                    })
-                } else {
-                    None
-                }
-            });
-            command.spawn(RawTxtAsync(file_handle));
-        }
-    });
+    if let (NormalButtonEvent::Clicked, TxtReaderState::Welcome) = (e.event(), reader_state.get()) {
+        next_reader_state.set(TxtReaderState::WaitForLoadingFile);
+        let pool = AsyncComputeTaskPool::get();
+        let file_handle: Task<Option<_>> = pool.spawn(async move {
+            let afd = rfd::AsyncFileDialog::new();
+            if let Some(handle) = afd.add_filter("text", &["txt", "md"]).pick_file().await {
+                let raw_txt = handle.read().await;
+                Some(RawTxt {
+                    name: handle.file_name().to_string(),
+                    raw: String::from_utf8(raw_txt).unwrap(),
+                })
+            } else {
+                None
+            }
+        });
+        command.spawn(RawTxtAsync(file_handle));
+    }
 }
 
 pub fn handle_new_text(
