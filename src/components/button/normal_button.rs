@@ -1,5 +1,12 @@
 use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
 
+#[derive(Event, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum NormalButtonEvent {
+    Clicked,
+    Hoverd,
+    Leaved,
+}
+
 pub trait NormalButton: Component + Sized {
     fn spawn_btn(self) -> impl Bundle {
         (
@@ -25,6 +32,7 @@ pub fn normal_button_update(
     mut command: Commands,
     mut interaction_query: Query<
         (
+            Entity,
             &Interaction,
             &mut BackgroundColor,
             &mut BorderColor,
@@ -36,7 +44,7 @@ pub fn normal_button_update(
     mut text_color_query: Query<&mut TextColor>,
 ) {
     interaction_query.iter_mut().for_each(
-        |(interaction, mut bg_color, mut border_color, children)| {
+        |(ent, interaction, mut bg_color, mut border_color, children)| {
             let pointer: CursorIcon = SystemCursorIcon::Pointer.into();
             let normal: CursorIcon = SystemCursorIcon::Default.into();
             match *interaction {
@@ -50,6 +58,7 @@ pub fn normal_button_update(
                     if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
                         **text_color = Color::WHITE;
                     }
+                    command.trigger_targets(NormalButtonEvent::Clicked, ent);
                 }
                 Interaction::Hovered => {
                     command
@@ -61,6 +70,7 @@ pub fn normal_button_update(
                     if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
                         **text_color = Color::BLACK;
                     }
+                    command.trigger_targets(NormalButtonEvent::Hoverd, ent);
                 }
                 Interaction::None => {
                     command
@@ -72,6 +82,7 @@ pub fn normal_button_update(
                     if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
                         **text_color = Color::WHITE;
                     }
+                    command.trigger_targets(NormalButtonEvent::Leaved, ent);
                 }
             }
         },

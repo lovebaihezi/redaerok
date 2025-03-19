@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{components::button::normal_button::NormalButton, states::page::PageState};
+use crate::{
+    components::button::normal_button::{NormalButton, NormalButtonEvent},
+    states::page::PageState,
+};
 
 pub struct WelcomePlugin;
 
@@ -112,6 +115,7 @@ pub fn spawn_welcome_ui(
                 .with_children(|parent| {
                     parent
                         .spawn(NormalButton::spawn_btn(JumpTextPageBtn))
+                        .observe(on_click_txt_btn)
                         .with_child(welcome_jump_to_txt());
                     parent
                         .spawn(NormalButton::spawn_btn(JumpAIChatPageBtn))
@@ -133,24 +137,17 @@ pub fn despawn_welcome_ui(
 }
 
 pub fn on_click_txt_btn(
+    e: Trigger<NormalButtonEvent>,
     mut next_page_state: ResMut<NextState<PageState>>,
-    mut query: Query<(&Interaction, &JumpTextPageBtn)>,
 ) {
-    for (interaction, _) in query.iter_mut() {
-        if *interaction == Interaction::Pressed {
-            next_page_state.set(PageState::TxtReadPage);
-        }
+    if e.event() == &NormalButtonEvent::Clicked {
+        next_page_state.set(PageState::TxtReadPage);
     }
 }
 
 impl Plugin for WelcomePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(PageState::WelcomePage), spawn_welcome_ui)
-            .add_systems(OnExit(PageState::WelcomePage), despawn_welcome_ui)
-            // Interaction System for Welcome Page
-            .add_systems(
-                Update,
-                (on_click_txt_btn,).run_if(in_state(PageState::WelcomePage)),
-            );
+            .add_systems(OnExit(PageState::WelcomePage), despawn_welcome_ui);
     }
 }
