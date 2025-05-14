@@ -17,12 +17,11 @@ pub trait NormalButton: Component + Sized {
                 width: Val::Auto,
                 height: Val::Auto,
                 padding: UiRect::all(Val::Px(4.0)),
-                border: UiRect::all(Val::Px(2.0)),
+                border: UiRect::bottom(Val::Px(2.0)),
                 ..default()
             },
-            BorderColor(Color::BLACK),
-            BorderRadius::MAX,
-            BackgroundColor(Color::WHITE),
+            BorderColor(Color::NONE.into()),
+            BackgroundColor(Color::NONE),
         )
     }
 }
@@ -54,7 +53,7 @@ pub fn normal_button_update(
                         .remove::<CursorIcon>()
                         .insert(normal);
                     *bg_color = Color::BLACK.into();
-                    border_color.0 = Color::WHITE;
+                    *border_color = Color::WHITE.into();
                     if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
                         **text_color = Color::WHITE;
                     }
@@ -65,10 +64,10 @@ pub fn normal_button_update(
                         .entity(*window)
                         .remove::<CursorIcon>()
                         .insert(pointer);
-                    *bg_color = Color::WHITE.into();
-                    border_color.0 = Color::BLACK;
+                    *bg_color = Color::NONE.into();
+                    *border_color = Color::WHITE.into();
                     if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
-                        **text_color = Color::BLACK;
+                        **text_color = Color::WHITE;
                     }
                     command.trigger_targets(NormalButtonEvent::Hoverd, ent);
                 }
@@ -77,8 +76,8 @@ pub fn normal_button_update(
                         .entity(*window)
                         .remove::<CursorIcon>()
                         .insert(normal);
-                    *bg_color = Color::BLACK.into();
-                    border_color.0 = Color::WHITE;
+                    *bg_color = Color::NONE.into();
+                    *border_color = Color::NONE.into();
                     if let Ok(mut text_color) = text_color_query.get_mut(children[0]) {
                         **text_color = Color::WHITE;
                     }
