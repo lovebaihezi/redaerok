@@ -20,7 +20,7 @@ pub trait NormalButton: Component + Sized {
                 border: UiRect::bottom(Val::Px(2.0)),
                 ..default()
             },
-            BorderColor(Color::NONE.into()),
+            BorderColor(Color::NONE),
             BackgroundColor(Color::NONE),
         )
     }
