@@ -1,4 +1,5 @@
 use bevy::{
+    color::palettes::css::RED,
     input::mouse::{MouseScrollUnit, MouseWheel},
     picking::focus::HoverMap,
     prelude::*,
@@ -28,9 +29,10 @@ impl TxtBase {
                 padding: UiRect::new(
                     Val::Percent(3.0),
                     Val::Percent(3.0),
-                    Val::Px(16.0),
-                    Val::Px(16.0),
+                    Val::Percent(3.0),
+                    Val::Percent(3.0),
                 ),
+                overflow: Overflow::clip(),
                 ..Default::default()
             },
         )
@@ -91,6 +93,7 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>, titl
             padding: UiRect::all(Val::Px(4.0)),
             ..Default::default()
         },
+        Outline::new(Val::Px(0.2), Val::ZERO, RED.into()),
         PickingBehavior {
             is_hoverable: true,
             should_block_lower: true,

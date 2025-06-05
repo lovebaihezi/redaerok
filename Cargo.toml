@@ -8,8 +8,8 @@ build = "build.rs"
 bevy = { version = "0.15.3", features = [
     "wayland",
     "bevy_remote",
-    "bevy_dev_tools",
     "serialize",
+    "bevy_dev_tools",
 ] }
 log = { version = "*", features = [
     "max_level_debug",
@@ -24,6 +24,7 @@ deunicode = "1.6.2"
 rfd = "0.15.2"
 clap = { version = "4.5.38", features = ["derive"] }
 ring = "0.17.14"
+bevy-inspector-egui = "0.30.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 mimalloc = "0.1.46"

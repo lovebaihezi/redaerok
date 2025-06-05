@@ -1,4 +1,5 @@
 use bevy::{
+    color::palettes::css::BLUE,
     prelude::*,
     tasks::{block_on, poll_once, AsyncComputeTaskPool, Task},
 };
@@ -125,7 +126,7 @@ fn back_root(parent: &mut ChildBuilder<'_>) {
         .spawn(BackToRootBtn::spawn_btn(BackToRootBtn))
         .observe(on_click_back_to_root_btn)
         .with_child((
-            Text::new("Root"),
+            Text::new("Home"),
             TextColor(Color::WHITE),
             TextFont {
                 font_size: 16.0,
@@ -331,9 +332,13 @@ pub fn add_pagegraph(
                                 padding: UiRect::all(Val::Px(4.0)),
                                 width: Val::Auto,
                                 height: Val::Auto,
+                                align_content: AlignContent::Center,
+                                justify_content: JustifyContent::Center,
                                 ..Default::default()
                             },
+                            Outline::new(Val::Px(1.0), Val::ZERO, BLUE.into()),
                             Text::new(raw_slice),
+                            TextLayout::default(),
                             TextFont {
                                 font_size: 16.0,
                                 font: font.clone(),

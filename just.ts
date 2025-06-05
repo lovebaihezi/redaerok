@@ -85,6 +85,14 @@ await new Command()
   .action(async () => {
     await prepareWasmPackage();
   })
+  .command("dev", "Start Application in Dev Mode")
+  .action(async () => {
+    await $`cargo run --features bevy/bevy_dev_tools`;
+  })
+  .command("ci", "Run CI tests")
+  .action(async () => {
+    await $`cargo test --features bevy/bevy_ci_testing`;
+  })
   .command("web", "Web build")
   .action(async () => {
     await installWasmDeps();
