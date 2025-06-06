@@ -28,9 +28,10 @@ impl TxtBase {
                 padding: UiRect::new(
                     Val::Percent(3.0),
                     Val::Percent(3.0),
-                    Val::Px(16.0),
-                    Val::Px(16.0),
+                    Val::Percent(3.0),
+                    Val::Percent(3.0),
                 ),
+                overflow: Overflow::clip(),
                 ..Default::default()
             },
         )

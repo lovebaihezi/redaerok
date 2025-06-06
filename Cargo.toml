@@ -8,25 +8,22 @@ build = "build.rs"
 bevy = { version = "0.15.3", features = [
     "wayland",
     "bevy_remote",
-    "bevy_dev_tools",
     "serialize",
+    "bevy_dev_tools",
 ] }
 log = { version = "*", features = [
     "max_level_debug",
     "release_max_level_warn",
 ] }
-ruzstd = { version = "0.8.0" }
 flume = { version = "0.11.1" }
-dotenv = "0.15.0"
 scraper = "0.23.1"
+# TODO: We need other methods to read local files in the browser.
 ehttp = "0.5.0"
-deunicode = "1.6.0"
-rfd = "0.15.2"
-clap = { version = "4.5.31", features = ["derive"] }
-ring = "0.17.13"
+clap = { version = "4.5.38", features = ["derive"] }
+bevy-inspector-egui = "0.30.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-mimalloc = "0.1.43"
+mimalloc = "0.1.46"
 
 [profile.dev]
 opt-level = 1

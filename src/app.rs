@@ -1,3 +1,4 @@
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use clap::Parser;
 use std::time::Duration;
 
@@ -13,7 +14,10 @@ use crate::{
 
 use bevy::{
     app::{PluginGroupBuilder, ScheduleRunnerPlugin},
-    dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+    dev_tools::{
+        fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+        ui_debug_overlay::{DebugUiPlugin, UiDebugOptions},
+    },
     prelude::*,
     text::FontSmoothing,
     winit::{WinitPlugin, WinitSettings},
@@ -83,11 +87,16 @@ impl Game {
         game.app
             .insert_resource(options)
             .add_plugins((default_plugins(app_type), fps_plugin()))
+            .add_plugins(bevy_inspector_egui::DefaultInspectorConfigPlugin)
+            .add_plugins(EguiPlugin)
+            .add_plugins(WorldInspectorPlugin::new())
+            .add_plugins(DebugUiPlugin)
             .insert_resource(WinitSettings::desktop_app())
             .init_state::<PageState>()
             .add_sub_state::<TxtReaderState>()
             .add_systems(Startup, (normal_camera, setup_game_control))
             .add_systems(Update, show_fps_overlay)
+            .insert_resource(UiDebugOptions::default())
             .add_plugins((
                 WelcomePlugin,
                 TxtReaderPlugin,
