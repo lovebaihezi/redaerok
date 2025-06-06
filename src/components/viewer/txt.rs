@@ -93,7 +93,6 @@ pub fn create_txt_viewer(parent: &mut ChildBuilder<'_>, font: Handle<Font>, titl
             padding: UiRect::all(Val::Px(4.0)),
             ..Default::default()
         },
-        Outline::new(Val::Px(0.2), Val::ZERO, RED.into()),
         PickingBehavior {
             is_hoverable: true,
             should_block_lower: true,

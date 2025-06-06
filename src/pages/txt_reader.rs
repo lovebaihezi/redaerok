@@ -336,7 +336,6 @@ pub fn add_pagegraph(
                                 justify_content: JustifyContent::Center,
                                 ..Default::default()
                             },
-                            Outline::new(Val::Px(1.0), Val::ZERO, BLUE.into()),
                             Text::new(raw_slice),
                             TextLayout::default(),
                             TextFont {
