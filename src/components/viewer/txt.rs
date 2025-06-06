@@ -1,5 +1,4 @@
 use bevy::{
-    color::palettes::css::RED,
     input::mouse::{MouseScrollUnit, MouseWheel},
     picking::focus::HoverMap,
     prelude::*,

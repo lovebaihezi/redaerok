@@ -1,5 +1,4 @@
 use bevy::{
-    color::palettes::css::BLUE,
     prelude::*,
     tasks::{block_on, poll_once, AsyncComputeTaskPool, Task},
 };
